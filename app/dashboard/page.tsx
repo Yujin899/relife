@@ -252,9 +252,9 @@ function DashboardContent() {
         );
     }
 
-    const league = getLeague(profile.totalGold);
-    const nextLeague = getNextLeague(profile.totalGold);
-    const prefersMotion = profile.settings?.prefersMotion !== false;
+    const league = getLeague(profile?.totalGold || 0);
+    const nextLeague = getNextLeague(profile?.totalGold || 0);
+    const prefersMotion = profile?.settings?.prefersMotion !== false;
 
     return (
         <div className="min-h-screen bg-background">
@@ -299,7 +299,7 @@ function DashboardContent() {
                                 <Trophy className="w-4 h-4 text-blue-400" />
                                 Leaderboard
                             </Link>
-                            {(profile.role === "admin" || profile.role === "owner") && (
+                            {(profile?.role === "admin" || profile?.role === "owner") && (
                                 <Link
                                     href="/admin"
                                     className="text-sm text-blue-500 font-bold hover:text-blue-600 transition flex items-center gap-1.5"
@@ -348,10 +348,10 @@ function DashboardContent() {
                                 </div>
                                 <button
                                     disabled={updatingSettings}
-                                    onClick={() => updateSettings({ prefersMotion: !profile.settings?.prefersMotion })}
-                                    className={`w-10 h-5 rounded-full transition-colors relative ${profile.settings?.prefersMotion !== false ? "bg-blue-500" : "bg-foreground/20"}`}
+                                    onClick={() => updateSettings({ prefersMotion: !profile?.settings?.prefersMotion })}
+                                    className={`w-10 h-5 rounded-full transition-colors relative ${profile?.settings?.prefersMotion !== false ? "bg-blue-500" : "bg-foreground/20"}`}
                                 >
-                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${profile.settings?.prefersMotion !== false ? "left-6" : "left-1"}`} />
+                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${profile?.settings?.prefersMotion !== false ? "left-6" : "left-1"}`} />
                                 </button>
                             </div>
 
@@ -363,10 +363,10 @@ function DashboardContent() {
                                 </div>
                                 <button
                                     disabled={updatingSettings}
-                                    onClick={() => updateSettings({ enableSound: !profile.settings?.enableSound })}
-                                    className={`w-10 h-5 rounded-full transition-colors relative ${profile.settings?.enableSound ? "bg-blue-500" : "bg-foreground/20"}`}
+                                    onClick={() => updateSettings({ enableSound: !profile?.settings?.enableSound })}
+                                    className={`w-10 h-5 rounded-full transition-colors relative ${profile?.settings?.enableSound ? "bg-blue-500" : "bg-foreground/20"}`}
                                 >
-                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${profile.settings?.enableSound ? "left-6" : "left-1"}`} />
+                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${profile?.settings?.enableSound ? "left-6" : "left-1"}`} />
                                 </button>
                             </div>
 
@@ -378,10 +378,10 @@ function DashboardContent() {
                                 </div>
                                 <button
                                     disabled={updatingSettings}
-                                    onClick={() => updateSettings({ isPrivate: !profile.settings?.isPrivate })}
-                                    className={`w-10 h-5 rounded-full transition-colors relative ${profile.settings?.isPrivate ? "bg-blue-500" : "bg-foreground/20"}`}
+                                    onClick={() => updateSettings({ isPrivate: !profile?.settings?.isPrivate })}
+                                    className={`w-10 h-5 rounded-full transition-colors relative ${profile?.settings?.isPrivate ? "bg-blue-500" : "bg-foreground/20"}`}
                                 >
-                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${profile.settings?.isPrivate ? "left-6" : "left-1"}`} />
+                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${profile?.settings?.isPrivate ? "left-6" : "left-1"}`} />
                                 </button>
                             </div>
                         </div>
@@ -411,7 +411,7 @@ function DashboardContent() {
                             src={user?.photoURL}
                             fallback={user?.displayName || "?"}
                             league={league.name}
-                            frame={profile.frame}
+                            frame={profile?.frame}
                             size="lg"
                         />
                         <div className="flex-1 min-w-0">
@@ -424,7 +424,7 @@ function DashboardContent() {
                                     {league.name} League
                                 </span>
                                 <span className="text-[10px] text-foreground/40 font-bold tracking-tight bg-foreground/5 px-2 py-0.5 rounded-full">
-                                    {profile.totalQuizzes} Quizzes &bull; {Math.round((profile.totalCorrect / (profile.totalQuestions || 1)) * 100)}% Accuracy
+                                    {profile?.totalQuizzes || 0} Quizzes &bull; {Math.round(((profile?.totalCorrect || 0) / (profile?.totalQuestions || 1)) * 100)}% Accuracy
                                 </span>
                             </div>
                         </div>

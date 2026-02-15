@@ -163,7 +163,7 @@ function ShopContent() {
             <main className="max-w-5xl mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {items.map((item) => {
-                        const isOwned = item.id.startsWith("theme_") && profile?.inventory.includes(item.id);
+                        const isOwned = item.id.startsWith("theme_") && profile?.inventory?.includes(item.id);
                         const isFreezeCapped = item.id === "streak_freeze" && (profile?.streakFreezes ?? 0) >= (item.limit || 1);
                         const canAfford = (profile?.totalGold ?? 0) >= item.cost;
                         const isDisabled = isOwned || isFreezeCapped || !canAfford || !!purchasing;

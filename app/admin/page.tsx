@@ -860,7 +860,8 @@ function EventsAdmin({ events, onRefresh }: { events: RelifeEvent[], onRefresh: 
                                         Goal: {event.target} &bull; {(() => {
                                             if (!event.startDate) return "TBD";
                                             try {
-                                                const d = event.startDate?.toMillis ? new Date(event.startDate.toMillis()) : new Date(event.startDate);
+                                                const start = event.startDate as any;
+                                                const d = start?.toMillis ? new Date(start.toMillis()) : new Date(start);
                                                 return isNaN(d.getTime()) ? "TBD" : d.toLocaleDateString();
                                             } catch {
                                                 return "TBD";

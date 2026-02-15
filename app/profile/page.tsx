@@ -288,17 +288,17 @@ function ProfileContent() {
                         )}
                         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-background border border-foreground/10 px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap">
                             <Trophy className="w-3 h-3 text-yellow-500" />
-                            <span className="text-xs font-bold text-foreground/80">{profile.league}</span>
+                            <span className="text-xs font-bold text-foreground/80">{profile?.league || "Bronze"}</span>
                         </div>
                     </div>
 
-                    <h1 className="text-2xl font-black tracking-tight mb-2 text-center">{profile.displayName}</h1>
+                    <h1 className="text-2xl font-black tracking-tight mb-2 text-center">{profile?.displayName || "Adventurer"}</h1>
 
                     <div className="flex items-center gap-2 text-sm font-medium text-foreground/60">
                         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 text-yellow-500 rounded-full border border-yellow-500/20">
                             <span className="font-black">{profile?.totalGold?.toLocaleString() || 0}</span> G
                         </div>
-                        {profile.profileUpdates !== undefined && (
+                        {profile?.profileUpdates !== undefined && (
                             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${profile.profileUpdates > 0 ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "bg-foreground/5 text-foreground/40 border-foreground/5"}`}>
                                 <Camera className="w-3 h-3" />
                                 <span className="font-black">{profile.profileUpdates}</span>
@@ -311,7 +311,7 @@ function ProfileContent() {
             <main className="max-w-4xl mx-auto px-4 -mt-6">
                 <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-10">
                     <div className="bg-background border border-foreground/10 p-3 sm:p-4 rounded-2xl shadow-sm text-center">
-                        <div className="text-xl sm:text-2xl font-black mb-1">{profile.totalCorrect}</div>
+                        <div className="text-xl sm:text-2xl font-black mb-1">{profile?.totalCorrect || 0}</div>
                         <div className="text-[10px] text-foreground/50 font-bold uppercase tracking-wider">Correct</div>
                     </div>
                     <div className="bg-background border border-foreground/10 p-3 sm:p-4 rounded-2xl shadow-sm text-center">
@@ -319,7 +319,7 @@ function ProfileContent() {
                         <div className="text-[10px] text-foreground/50 font-bold uppercase tracking-wider">Accuracy</div>
                     </div>
                     <div className="bg-background border border-foreground/10 p-3 sm:p-4 rounded-2xl shadow-sm text-center">
-                        <div className="text-xl sm:text-2xl font-black mb-1">{profile.totalQuizzes || 0}</div>
+                        <div className="text-xl sm:text-2xl font-black mb-1">{profile?.totalQuizzes || 0}</div>
                         <div className="text-[10px] text-foreground/50 font-bold uppercase tracking-wider">Quizzes</div>
                     </div>
                 </div>
@@ -387,7 +387,7 @@ function ProfileContent() {
                                     <h3 className="font-bold text-sm truncate">Default Theme</h3>
                                     <p className="text-xs text-foreground/50 truncate">Classic Look</p>
                                 </div>
-                                {profile.activeTheme === "default" ? (
+                                {profile?.activeTheme === "default" ? (
                                     <div className="px-3 py-1 bg-green-500/10 text-green-600 rounded-full text-[10px] font-bold">Active</div>
                                 ) : (
                                     <button
