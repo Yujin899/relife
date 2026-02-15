@@ -277,7 +277,7 @@ function ChatContent() {
     };
 
     return (
-        <div className="flex h-screen bg-[#0a0a0a] text-[#e5e5e5] overflow-hidden pb-20 sm:pb-0">
+        <div className="flex h-screen bg-[#0a0a0a] text-[#e5e5e5] overflow-hidden">
             {/* Discord Sidebar - Collapsible on mobile */}
             <div className={`
                 ${showChannels ? "fixed inset-0 z-50 flex" : "hidden sm:flex"}
