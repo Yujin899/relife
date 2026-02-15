@@ -396,7 +396,7 @@ function DashboardContent() {
                 </div>
             )}
 
-            <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+            <main className="max-w-2xl mx-auto px-4 py-6 pb-24 sm:pb-6 space-y-6">
                 {/* Profile Quick Card / Header */}
                 <Link
                     href="/profile"
@@ -678,6 +678,37 @@ function DashboardContent() {
                         </section>
                     )
                 }
+                {/* Admin Portal Card */}
+                {(profile?.role === "admin" || profile?.role === "owner") && (
+                    <section>
+                        <motion.div
+                            whileHover={prefersMotion ? { y: -4, scale: 1.01 } : {}}
+                            whileTap={prefersMotion ? { scale: 0.98 } : {}}
+                        >
+                            <Link
+                                href="/admin"
+                                className="block p-6 rounded-2xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 transition-all duration-300 group shadow-xl shadow-blue-500/5"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                                            <Shield className="w-6 h-6 text-blue-500" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-lg font-bold">Admin Portal</h2>
+                                            <p className="text-xs mt-1 text-foreground/50">
+                                                Manage subjects, quests, and events
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center border border-blue-500/10 group-hover:bg-blue-500/10 transition-all">
+                                        <ChevronRight className="w-5 h-5 text-blue-500 group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                </div>
+                            </Link>
+                        </motion.div>
+                    </section>
+                )}
 
                 {/* Smart Review Card */}
                 <section>

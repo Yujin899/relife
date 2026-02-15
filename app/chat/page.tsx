@@ -521,7 +521,7 @@ function ChatContent() {
                 <PresenceSidebar />
             </div>
 
-            <BottomNav />
+
 
             <style jsx global>{`
                 .custom-scrollbar::-webkit-scrollbar {
