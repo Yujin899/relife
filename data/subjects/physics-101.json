@@ -1,0 +1,160 @@
+{
+  "subjectId": "physics-101",
+  "subjectName": "Physics 101",
+  "subjectDescription": "Mechanics, forces, and energy basics",
+  "quizzes": [
+    {
+      "quizId": "physics-forces",
+      "title": "Forces & Motion",
+      "description": "Newton's laws and mechanics",
+      "questions": [
+        {
+          "text": "What is the SI unit of force?",
+          "options": [
+            { "id": "a", "text": "Joule" },
+            { "id": "b", "text": "Watt" },
+            { "id": "c", "text": "Newton" },
+            { "id": "d", "text": "Pascal" }
+          ],
+          "correctOptionId": "c",
+          "explanation": "The Newton (N) is the SI unit of force, named after Isaac Newton."
+        },
+        {
+          "text": "What is the acceleration due to gravity on Earth (approx)?",
+          "options": [
+            { "id": "a", "text": "8.9 m/s²" },
+            { "id": "b", "text": "9.8 m/s²" },
+            { "id": "c", "text": "10.8 m/s²" },
+            { "id": "d", "text": "7.8 m/s²" }
+          ],
+          "correctOptionId": "b",
+          "explanation": "The standard acceleration due to gravity near Earth's surface is approximately 9.8 m/s²."
+        },
+        {
+          "text": "Which law states: For every action, there is an equal and opposite reaction?",
+          "options": [
+            { "id": "a", "text": "Newton's First Law" },
+            { "id": "b", "text": "Newton's Second Law" },
+            { "id": "c", "text": "Newton's Third Law" },
+            { "id": "d", "text": "Law of Conservation" }
+          ],
+          "correctOptionId": "c",
+          "explanation": "Newton's Third Law describes the interaction between two objects and the forces they exert on each other."
+        },
+        {
+          "text": "F = ma is a statement of which law?",
+          "options": [
+            { "id": "a", "text": "Newton's First Law" },
+            { "id": "b", "text": "Newton's Second Law" },
+            { "id": "c", "text": "Newton's Third Law" },
+            { "id": "d", "text": "Hooke's Law" }
+          ],
+          "correctOptionId": "b",
+          "explanation": "Newton's Second Law states that force equals mass times acceleration (F = ma)."
+        },
+        {
+          "text": "An object at rest stays at rest unless acted upon by what?",
+          "options": [
+            { "id": "a", "text": "Gravity" },
+            { "id": "b", "text": "Friction" },
+            { "id": "c", "text": "An unbalanced force" },
+            { "id": "d", "text": "Momentum" }
+          ],
+          "correctOptionId": "c",
+          "explanation": "This is Newton's First Law (Inertia), which states objects resist changes in their state of motion."
+        }
+      ]
+    },
+    {
+      "quizId": "physics-energy",
+      "title": "Energy & Work",
+      "description": "Kinetic, potential, and power",
+      "questions": [
+        {
+          "text": "What is the formula for kinetic energy?",
+          "options": [
+            { "id": "a", "text": "½mv²" },
+            { "id": "b", "text": "mgh" },
+            { "id": "c", "text": "Fd" },
+            { "id": "d", "text": "ma" }
+          ],
+          "correctOptionId": "a",
+          "explanation": "Kinetic energy (KE) is the energy of motion, calculated as one-half times mass times velocity squared."
+        },
+        {
+          "text": "What type of energy does a compressed spring have?",
+          "options": [
+            { "id": "a", "text": "Kinetic energy" },
+            { "id": "b", "text": "Thermal energy" },
+            { "id": "c", "text": "Elastic potential energy" },
+            { "id": "d", "text": "Chemical energy" }
+          ],
+          "correctOptionId": "c",
+          "explanation": "Elastic potential energy is stored in objects when they are temporarily deformed (like a compressed spring)."
+        },
+        {
+          "text": "What is the unit of power?",
+          "options": [
+            { "id": "a", "text": "Joule" },
+            { "id": "b", "text": "Newton" },
+            { "id": "c", "text": "Watt" },
+            { "id": "d", "text": "Pascal" }
+          ],
+          "correctOptionId": "c",
+          "explanation": "Continuous power of one watt (W) is equal to one joule (J) of work performed per second."
+        }
+      ]
+    },
+    {
+      "quizId": "physics-waves",
+      "title": "Waves & Electricity",
+      "description": "Light, sound, and current",
+      "questions": [
+        {
+          "text": "What is the unit of electric current?",
+          "options": [
+            { "id": "a", "text": "Volt" },
+            { "id": "b", "text": "Ohm" },
+            { "id": "c", "text": "Ampere" },
+            { "id": "d", "text": "Watt" }
+          ],
+          "correctOptionId": "c",
+          "explanation": "The Ampere (A) is the SI unit of electric current, defined as one coulomb of charge passing a point per second."
+        },
+        {
+          "text": "What is the speed of light in vacuum (approx)?",
+          "options": [
+            { "id": "a", "text": "3 × 10⁶ m/s" },
+            { "id": "b", "text": "3 × 10⁸ m/s" },
+            { "id": "c", "text": "3 × 10⁵ m/s" },
+            { "id": "d", "text": "3 × 10¹⁰ m/s" }
+          ],
+          "correctOptionId": "b",
+          "explanation": "Light travels at approximately 299,792,458 m/s, or roughly 3 × 10⁸ m/s."
+        },
+        {
+          "text": "Which quantity is a vector?",
+          "options": [
+            { "id": "a", "text": "Speed" },
+            { "id": "b", "text": "Mass" },
+            { "id": "c", "text": "Temperature" },
+            { "id": "d", "text": "Velocity" }
+          ],
+          "correctOptionId": "d",
+          "explanation": "Velocity is a vector quantity because it has both magnitude (speed) and direction."
+        },
+        {
+          "text": "What is the relationship between frequency and wavelength?",
+          "options": [
+            { "id": "a", "text": "Directly proportional" },
+            { "id": "b", "text": "Inversely proportional" },
+            { "id": "c", "text": "No relationship" },
+            { "id": "d", "text": "Exponential" }
+          ],
+          "correctOptionId": "b",
+          "explanation": "For a wave with constant speed (v = fλ), frequency (f) and wavelength (λ) are inversely proportional."
+        }
+      ]
+    }
+  ]
+}

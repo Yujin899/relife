@@ -1,0 +1,160 @@
+{
+  "subjectId": "math-101",
+  "subjectName": "Mathematics 101",
+  "subjectDescription": "Algebra, geometry, and basic calculus",
+  "quizzes": [
+    {
+      "quizId": "math-algebra-basics",
+      "title": "Algebra Basics",
+      "description": "Equations, simplification, and variables",
+      "questions": [
+        {
+          "text": "What is the value of x in the equation 2x + 6 = 14?",
+          "options": [
+            { "id": "a", "text": "2" },
+            { "id": "b", "text": "4" },
+            { "id": "c", "text": "6" },
+            { "id": "d", "text": "8" }
+          ],
+          "correctOptionId": "b",
+          "explanation": "Subtract 6 from both sides to get 2x = 8, then divide by 2 to find x = 4."
+        },
+        {
+          "text": "Simplify: 3(x + 4) - 2x",
+          "options": [
+            { "id": "a", "text": "x + 12" },
+            { "id": "b", "text": "x + 4" },
+            { "id": "c", "text": "5x + 4" },
+            { "id": "d", "text": "5x + 12" }
+          ],
+          "correctOptionId": "a",
+          "explanation": "Distribute 3 across (x + 4) to get 3x + 12 - 2x, which simplifies to x + 12."
+        },
+        {
+          "text": "Solve for x: x/3 = 9",
+          "options": [
+            { "id": "a", "text": "3" },
+            { "id": "b", "text": "6" },
+            { "id": "c", "text": "27" },
+            { "id": "d", "text": "12" }
+          ],
+          "correctOptionId": "c",
+          "explanation": "Multiply both sides by 3 to isolate x: x = 9 * 3 = 27."
+        },
+        {
+          "text": "If a = 5 and b = 3, what is a² - b²?",
+          "options": [
+            { "id": "a", "text": "8" },
+            { "id": "b", "text": "16" },
+            { "id": "c", "text": "34" },
+            { "id": "d", "text": "2" }
+          ],
+          "correctOptionId": "b",
+          "explanation": "Substitute the values: 5² - 3² = 25 - 9 = 16."
+        },
+        {
+          "text": "What is 2³ × 2²?",
+          "options": [
+            { "id": "a", "text": "16" },
+            { "id": "b", "text": "32" },
+            { "id": "c", "text": "64" },
+            { "id": "d", "text": "10" }
+          ],
+          "correctOptionId": "b",
+          "explanation": "When multiplying like bases, add the exponents: 2^(3+2) = 2^5 = 32."
+        }
+      ]
+    },
+    {
+      "quizId": "math-geometry",
+      "title": "Geometry Essentials",
+      "description": "Area, perimeter, and shapes",
+      "questions": [
+        {
+          "text": "What is the area of a triangle with base 10 and height 6?",
+          "options": [
+            { "id": "a", "text": "60" },
+            { "id": "b", "text": "16" },
+            { "id": "c", "text": "30" },
+            { "id": "d", "text": "36" }
+          ],
+          "correctOptionId": "c",
+          "explanation": "The area of a triangle is (base * height) / 2. So, (10 * 6) / 2 = 30."
+        },
+        {
+          "text": "What is the perimeter of a rectangle with length 8 and width 5?",
+          "options": [
+            { "id": "a", "text": "13" },
+            { "id": "b", "text": "26" },
+            { "id": "c", "text": "40" },
+            { "id": "d", "text": "20" }
+          ],
+          "correctOptionId": "b",
+          "explanation": "The perimeter of a rectangle is 2 * (length + width). So, 2 * (8 + 5) = 26."
+        },
+        {
+          "text": "What is the square root of 144?",
+          "options": [
+            { "id": "a", "text": "11" },
+            { "id": "b", "text": "12" },
+            { "id": "c", "text": "13" },
+            { "id": "d", "text": "14" }
+          ],
+          "correctOptionId": "b",
+          "explanation": "12 squared is 144, so the square root of 144 is 12."
+        },
+        {
+          "text": "What is 15% of 200?",
+          "options": [
+            { "id": "a", "text": "15" },
+            { "id": "b", "text": "20" },
+            { "id": "c", "text": "25" },
+            { "id": "d", "text": "30" }
+          ],
+          "correctOptionId": "d",
+          "explanation": "15% of 200 is calculated as (15/100) * 200, which equals 30."
+        }
+      ]
+    },
+    {
+      "quizId": "math-calculus-intro",
+      "title": "Intro to Calculus",
+      "description": "Derivatives, functions, and slopes",
+      "questions": [
+        {
+          "text": "What is the derivative of x³?",
+          "options": [
+            { "id": "a", "text": "x²" },
+            { "id": "b", "text": "3x" },
+            { "id": "c", "text": "3x²" },
+            { "id": "d", "text": "2x³" }
+          ],
+          "correctOptionId": "c",
+          "explanation": "Using the power rule, the derivative of x^n is nx^(n-1). For x³, it's 3x²."
+        },
+        {
+          "text": "If f(x) = 2x² + 3, what is f(2)?",
+          "options": [
+            { "id": "a", "text": "7" },
+            { "id": "b", "text": "11" },
+            { "id": "c", "text": "9" },
+            { "id": "d", "text": "13" }
+          ],
+          "correctOptionId": "b",
+          "explanation": "Substitute x = 2 into the function: 2(2)² + 3 = 2(4) + 3 = 11."
+        },
+        {
+          "text": "What is the slope of the line y = 3x - 7?",
+          "options": [
+            { "id": "a", "text": "-7" },
+            { "id": "b", "text": "7" },
+            { "id": "c", "text": "3" },
+            { "id": "d", "text": "-3" }
+          ],
+          "correctOptionId": "c",
+          "explanation": "In the equation y = mx + b, 'm' is the slope. Here, m = 3."
+        }
+      ]
+    }
+  ]
+}
