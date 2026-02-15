@@ -6,17 +6,19 @@ import { useAuth } from "@/lib/auth-context";
 import { db } from "@/lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 import UserAvatar from "@/components/UserAvatar";
-import { motion, AnimatePresence } from "framer-motion";
+import LucideIcon from "@/components/LucideIcon";
+import { motion } from "framer-motion";
 import {
     Trophy,
-    Zap,
-    Palette,
     Package,
-    Crop,
     Check,
     Loader2,
     Camera,
-    Medal
+    Medal,
+    Shield,
+    ChevronLeft,
+    ChevronRight,
+    Search,
 } from "lucide-react";
 import Link from "next/link";
 import Script from "next/script";
@@ -137,7 +139,7 @@ function ProfileContent() {
             if (item.id.startsWith("theme_")) {
                 payload.activeTheme = item.id;
             } else if (item.id.startsWith("frame_")) {
-                payload.frame = item.id === "frame_none" ? null : (item.icon.startsWith("/") ? item.icon : item.id);
+                payload.frame = item.id === "frame_none" ? null : item.id;
             } else if (item.id.startsWith("league_frame_")) {
                 payload.frame = item.icon;
             } else {
@@ -464,7 +466,9 @@ function ProfileContent() {
                                     <div className="w-12 h-12 flex-shrink-0 bg-foreground/5 rounded-xl flex items-center justify-center text-2xl overflow-hidden relative">
                                         {item.id.startsWith("frame_") ? (
                                             <UserAvatar src={profile.photoURL} fallback={profile.displayName} frame={item.icon} size="sm" />
-                                        ) : (item.icon)}
+                                        ) : (
+                                            <LucideIcon name={item.icon} className="w-6 h-6 opacity-70" />
+                                        )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-bold text-sm truncate">{item.name}</h3>

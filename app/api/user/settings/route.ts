@@ -67,12 +67,16 @@ export async function POST(request: NextRequest) {
             if (frame === null) {
                 updateData.frame = null;
             } else {
+                // Check if frame exists in inventory (stores item ids like 'frame_1')
                 if (inventory.includes(frame)) {
-                    // We need to know the URL. For now, hardcode or distinct?
-                    // Let's just use a simple mapping or convention.
-                    // Convention: /frames/{id_replaced_underscore_with_dash}.png
-                    const filename = frame.replace("_", "-") + ".png";
-                    updateData.frame = `/frames/${filename}`;
+                    // Map frame_1 to /frames/frame-1.png
+                    if (frame.startsWith("frame_")) {
+                        const filename = frame.replace("_", "-") + ".png";
+                        updateData.frame = `/frames/${filename}`;
+                    } else {
+                        // For league frames which store the name directly
+                        updateData.frame = frame;
+                    }
                 } else {
                     return NextResponse.json({ error: "Frame not owned" }, { status: 403 });
                 }
