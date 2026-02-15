@@ -11,7 +11,9 @@ import {
     Trophy,
     Lock,
     Loader2,
-    AlertCircle
+    AlertCircle,
+    LayoutDashboard,
+    Menu
 } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import { useAuth } from "@/lib/auth-context";
@@ -339,13 +341,21 @@ function ChatContent() {
                             onClick={() => setShowChannels(true)}
                             className="sm:hidden p-2 -ml-2 text-white/40 hover:text-white"
                         >
-                            <Hash className="w-5 h-5" />
+                            <Menu className="w-5 h-5" />
                         </button>
                         <Hash className="hidden sm:block w-5 h-5 text-white/30" />
                         <h3 className="font-bold text-lg truncate">{currentChannel.name}</h3>
                         <div className="hidden sm:block h-4 w-px bg-white/10 mx-2" />
                         <span className="hidden sm:block text-xs text-white/40 font-medium">Official club for {currentChannel.minLeague}+</span>
                     </div>
+
+                    <Link
+                        href="/dashboard"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold uppercase tracking-wider text-white/60 hover:text-white transition-all border border-white/5 hover:border-white/10"
+                    >
+                        <LayoutDashboard className="w-3 h-3" />
+                        <span className="hidden sm:inline">Dashboard</span>
+                    </Link>
                 </header>
 
                 {/* Messages Feed */}
