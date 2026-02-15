@@ -17,7 +17,10 @@ export default function AnimatedNumber({ value, className }: AnimatedNumberProps
         restDelta: 0.001
     });
 
-    const rounded = useTransform(spring, (latest) => Math.round(latest).toLocaleString());
+    const rounded = useTransform(spring, (latest) => {
+        const val = Number(latest);
+        return isNaN(val) ? "0" : Math.round(val).toLocaleString();
+    });
 
     useEffect(() => {
         spring.set(value);

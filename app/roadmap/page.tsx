@@ -25,24 +25,32 @@ function RoadmapContent() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function load() {
+        const fetchRoadmap = async () => {
             if (!user) return;
             try {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    const start = data.createdAt?.toDate?.() || new Date(data.createdAt) || new Date();
+                const token = await user.getIdToken();
+                const res = await fetch("/api/roadmap", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                // Ensure data.profile exists before accessing its properties
+                if (data.profile) {
+                    const start = data.profile.createdAt?.toDate?.() || (data.profile.createdAt ? new Date(data.profile.createdAt) : new Date());
                     const now = new Date();
                     const weeksJoined = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 7)) + 1;
                     setCurrentWeek(Math.min(12, weeksJoined));
+                } else {
+                    console.warn("User profile data not found in roadmap API response.");
                 }
             } catch (error) {
                 console.error("Failed to load user progress:", error);
             } finally {
                 setLoading(false);
             }
-        }
-        load();
+        };
+
+        fetchRoadmap();
     }, [user]);
 
     if (loading) {

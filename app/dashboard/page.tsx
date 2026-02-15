@@ -539,7 +539,7 @@ function DashboardContent() {
 
                 {/* My Journey Roadmap */}
                 {(() => {
-                    const start = profile.createdAt?.toDate?.() || new Date(profile.createdAt) || new Date();
+                    const start = profile?.createdAt?.toDate?.() || (profile?.createdAt ? new Date(profile.createdAt) : new Date());
                     const now = new Date();
                     const weeksJoined = Math.floor((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24 * 7)) + 1;
                     const currentWeek = Math.min(12, weeksJoined);

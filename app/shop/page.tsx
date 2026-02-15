@@ -13,6 +13,22 @@ import { ChevronLeft, ShoppingCart, Sparkles, Zap, Coins, Clock } from "lucide-r
 import LucideIcon from "@/components/LucideIcon";
 import { motion } from "framer-motion";
 
+interface UserProfile {
+    totalGold: number;
+    inventory: string[];
+    streakFreezes: number;
+}
+
+interface ShopItem {
+    id: string;
+    name: string;
+    description: string;
+    cost: number;
+    type: "consumable" | "cosmetic";
+    icon: string;
+    limit?: number;
+}
+
 export default function ShopPage() {
     return (
         <AuthGuard>
@@ -137,7 +153,7 @@ function ShopContent() {
                         >
                             <Coins className="w-4 h-4 text-yellow-500" />
                             <span className="text-sm font-black text-yellow-500 italic">
-                                {profile?.totalGold.toLocaleString()} G
+                                {profile?.totalGold?.toLocaleString() || 0} G
                             </span>
                         </motion.div>
                     </div>
@@ -215,7 +231,7 @@ function ShopContent() {
                                         <div className="flex items-center gap-1.5">
                                             <Coins className="w-3.5 h-3.5 text-yellow-500" />
                                             <span className="text-lg font-black text-yellow-500 italic tracking-tighter">
-                                                {item.cost.toLocaleString()}
+                                                {item.cost?.toLocaleString() || 0}
                                             </span>
                                         </div>
                                         {item.id === "streak_freeze" && (

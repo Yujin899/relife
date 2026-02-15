@@ -857,7 +857,15 @@ function EventsAdmin({ events, onRefresh }: { events: RelifeEvent[], onRefresh: 
                                         </span>
                                     </div>
                                     <p className="text-xs text-foreground/40 font-medium truncate">
-                                        Goal: {event.target} &bull; {new Date(event.startDate?.toMillis?.() || event.startDate).toLocaleDateString()}
+                                        Goal: {event.target} &bull; {(() => {
+                                            if (!event.startDate) return "TBD";
+                                            try {
+                                                const d = event.startDate?.toMillis ? new Date(event.startDate.toMillis()) : new Date(event.startDate);
+                                                return isNaN(d.getTime()) ? "TBD" : d.toLocaleDateString();
+                                            } catch {
+                                                return "TBD";
+                                            }
+                                        })()}
                                     </p>
                                 </div>
                             </div>

@@ -175,7 +175,7 @@ function LeaderboardContent() {
                                         <span className="text-[8px] font-black px-2 py-0.5 rounded-full bg-blue-500 text-white uppercase">Your Position</span>
                                     </div>
                                     <p className="text-[10px] text-foreground/40 font-black uppercase tracking-widest">
-                                        {userLeague.name} League &bull; {userGold.toLocaleString()} G
+                                        {userLeague.name} League &bull; {userGold?.toLocaleString() || 0} G
                                     </p>
                                 </div>
                             </div>
@@ -225,7 +225,7 @@ function LeaderboardContent() {
                                             <div className="flex flex-col items-end shrink-0">
                                                 <div className={`flex items-center gap-1.5 font-black italic ${entry.isCurrentUser ? "text-background" : "text-foreground"}`}>
                                                     {isTopThree && !entry.isCurrentUser && <Crown className="w-3 h-3 text-amber-500" />}
-                                                    {entry.totalGold.toLocaleString()}
+                                                    {entry.totalGold?.toLocaleString() || 0}
                                                 </div>
                                                 <span className={`text-[8px] font-black uppercase ${entry.isCurrentUser ? "text-background/30" : "text-foreground/20"}`}>Credits</span>
                                             </div>

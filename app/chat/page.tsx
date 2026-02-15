@@ -425,7 +425,14 @@ function ChatContent() {
                                         </Popover>
                                     ) : (
                                         <div className="w-10 shrink-0 text-[10px] text-white/20 font-mono text-center opacity-0 group-hover:opacity-100 mt-1 select-none">
-                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {(() => {
+                                                try {
+                                                    const d = new Date(msg.createdAt);
+                                                    return isNaN(d.getTime()) ? "--:--" : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                } catch {
+                                                    return "--:--";
+                                                }
+                                            })()}
                                         </div>
                                     )}
 
@@ -439,7 +446,14 @@ function ChatContent() {
                                                     {displayName}
                                                 </span>
                                                 <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-white/5 text-white/40">
-                                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    {(() => {
+                                                        try {
+                                                            const d = new Date(msg.createdAt);
+                                                            return isNaN(d.getTime()) ? "--:--" : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                        } catch {
+                                                            return "--:--";
+                                                        }
+                                                    })()}
                                                 </span>
                                                 {msg.status === "sending" && <Loader2 className="w-3 h-3 text-white/20 animate-spin ml-2" />}
                                                 {msg.status === "error" && (
