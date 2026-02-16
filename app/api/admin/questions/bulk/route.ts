@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
         });
         return NextResponse.json({
             error: "Failed to upload questions in bulk",
-            details: error.message
+            details: err.message
         }, { status: 500 });
     }
 }

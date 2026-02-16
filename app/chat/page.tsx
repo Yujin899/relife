@@ -97,6 +97,8 @@ export default function ChatPage() {
 interface UserProfile {
     totalGold: number;
     displayName?: string;
+    photoURL?: string;
+    frame?: string;
 }
 
 function ChatContent() {
@@ -138,6 +140,7 @@ function ChatContent() {
                     displayName: profile.displayName || "Student",
                     league: userLeague.name,
                     photoURL: profile.photoURL || user.photoURL || "",
+                    frame: profile.frame || null,
                     state: "online",
                     lastChanged: serverTimestamp(),
                     currentChannel: channelId

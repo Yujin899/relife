@@ -7,7 +7,7 @@ interface UserAvatarProps {
     src?: string | null;
     fallback: string;
     league?: string;
-    size?: "sm" | "md" | "lg" | "xl"; // sm: 8, md: 10, lg: 16, xl: 24
+    size?: "sm" | "md" | "lg" | "xl" | "full"; // sm: 8, md: 10, lg: 16, xl: 24, full: 100%
     className?: string;
     editable?: boolean;
     onEdit?: () => void;
@@ -27,6 +27,7 @@ const SIZE_CLASSES = {
     md: "w-10 h-10 text-xs",
     lg: "w-16 h-16 text-lg",
     xl: "w-24 h-24 text-2xl",
+    full: "w-full h-full text-5xl",
 };
 
 export default function UserAvatar({
@@ -54,7 +55,7 @@ export default function UserAvatar({
             : "none";
 
     return (
-        <div className={`relative group/avatar ${className}`}>
+        <div className={`relative group/avatar ${size === 'full' ? 'w-full h-full flex items-center justify-center' : ''} ${className}`}>
             <div
                 onClick={editable ? onEdit : undefined}
                 className={`${SIZE_CLASSES[size]} rounded-full flex items-center justify-center shrink-0 relative z-10 transition-transform ${editable ? "cursor-pointer hover:opacity-90 active:scale-95" : ""}`}
@@ -64,18 +65,20 @@ export default function UserAvatar({
                     boxShadow: frame ? "none" : glowStyle,
                 }}
             >
-                {src && !imgError ? (
-                    <img
-                        src={src}
-                        alt="Avatar"
-                        className="w-full h-full object-cover rounded-full"
-                        onError={() => setImgError(true)}
-                    />
-                ) : (
-                    <span className="font-black text-white" style={{ color: borderColor }}>
-                        {fallback.charAt(0).toUpperCase()}
-                    </span>
-                )}
+                <div className="absolute inset-0 rounded-full overflow-hidden flex items-center justify-center z-0">
+                    {src && !imgError ? (
+                        <img
+                            src={src}
+                            alt="Avatar"
+                            className="w-full h-full object-cover"
+                            onError={() => setImgError(true)}
+                        />
+                    ) : (
+                        <span className="font-black text-white" style={{ color: borderColor }}>
+                            {fallback.charAt(0).toUpperCase()}
+                        </span>
+                    )}
+                </div>
 
                 {/* Frame Overlay */}
                 {framePath && (
