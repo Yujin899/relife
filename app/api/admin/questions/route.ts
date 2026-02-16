@@ -16,7 +16,18 @@ export async function GET(request: NextRequest) {
 
     const snapshot = await adminDb.collection("questions").where("quizId", "==", quizId).get();
     const questions = snapshot.docs.map((doc) => doc.data());
-    return NextResponse.json({ questions });
+
+    let subjectId = "";
+    if (questions.length > 0) {
+        subjectId = questions[0].subjectId;
+    } else {
+        const quizDoc = await adminDb.collection("quizzes").doc(quizId).get();
+        if (quizDoc.exists) {
+            subjectId = quizDoc.data()!.subjectId;
+        }
+    }
+
+    return NextResponse.json({ questions, subjectId });
 }
 
 // POST — create a new question

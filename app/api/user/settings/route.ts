@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
                     };
                     const gold = userData.totalGold || 0;
                     if (gold >= LEAGUE_THRESHOLDS[frame]) {
-                        updateData.frame = frame;
+                        updateData.frame = `/frames/${frame.toLowerCase()}.png`;
                     } else {
                         return NextResponse.json({ error: "League rank too low" }, { status: 403 });
                     }

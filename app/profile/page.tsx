@@ -63,7 +63,7 @@ export default function ProfilePage() {
 }
 
 function ProfileContent() {
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
     const { showNotification } = useNotifications();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [shopItems, setShopItems] = useState<ShopItem[]>([]);
@@ -449,7 +449,7 @@ function ProfileContent() {
                                             className={`relative p-4 rounded-2xl border transition-all flex items-center gap-4 group ${isEquipped ? "border-blue-500/30 bg-blue-500/5" : "border-foreground/10 bg-background hover:border-foreground/20"}`}
                                         >
                                             <div className="w-12 h-12 flex-shrink-0 bg-foreground/5 rounded-xl flex items-center justify-center text-2xl overflow-hidden relative">
-                                                <UserAvatar src={profile.photoURL} fallback={profile.displayName} league={l} frame={null} size="sm" />
+                                                <UserAvatar src={profile.photoURL} fallback={profile.displayName} league={l} frame={l} size="sm" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="font-bold text-sm truncate">{l} Frame</h3>

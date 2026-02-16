@@ -42,9 +42,10 @@ export default function UserAvatar({
     const [imgError, setImgError] = useState(false);
     const borderColor = LEAGUE_COLORS[league] || LEAGUE_COLORS["Bronze"];
 
-    // Glow effect for high tiers (only if no frame is present, or maybe combined?)
-    // If a frame is present, we might want to disable the border/glow or integrate it.
-    // For now, let's keep the league border/glow as a "base" and the frame sits on top.
+    // Normalize frame path
+    const framePath = frame && !frame.startsWith("/") && !frame.startsWith("http")
+        ? `/frames/${frame.toLowerCase()}.png`
+        : frame;
 
     const glowStyle = league === "Diamond"
         ? `0 0 10px ${borderColor}`
@@ -77,9 +78,9 @@ export default function UserAvatar({
                 )}
 
                 {/* Frame Overlay */}
-                {frame && (
+                {framePath && (
                     <img
-                        src={frame}
+                        src={framePath}
                         alt="Frame"
                         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-auto h-[135%] max-w-none pointer-events-none z-20"
                     />

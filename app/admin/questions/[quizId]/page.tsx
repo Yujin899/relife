@@ -74,7 +74,9 @@ function QuestionsContent() {
             if (data.error) setError(data.error);
             else {
                 setQuestions(data.questions || []);
-                if (data.questions?.length > 0) {
+                if (data.subjectId) {
+                    setSubjectId(data.subjectId);
+                } else if (data.questions?.length > 0) {
                     setSubjectId(data.questions[0].subjectId);
                 } else {
                     const parts = quizId.split("-");
