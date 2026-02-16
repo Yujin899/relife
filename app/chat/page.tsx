@@ -588,7 +588,7 @@ function ChatContent() {
                                                     </button>
                                                 </PopoverTrigger>
                                                 <PopoverContent
-                                                    className="w-[90vw] sm:w-96 bg-[#0d0d0f] border-none p-0 overflow-hidden text-white shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[2rem] z-[100] max-h-[80vh] overflow-y-auto"
+                                                    className="w-[88vw] max-w-[340px] sm:w-96 bg-[#0d0d0f] border-none p-0 overflow-hidden text-white shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[2rem] z-[100] max-h-[85vh] overflow-y-auto"
                                                     side="bottom"
                                                     align="center"
                                                     sideOffset={10}
@@ -612,7 +612,7 @@ function ChatContent() {
 
                                                         {/* Dynamic Banner */}
                                                         <div
-                                                            className="h-32 relative overflow-hidden"
+                                                            className="h-24 sm:h-32 relative overflow-hidden"
                                                             style={{
                                                                 background: displayFrame?.includes('blue-neon')
                                                                     ? 'linear-gradient(135deg, #2e1065 0%, #0f091a 100%)'
@@ -649,13 +649,13 @@ function ChatContent() {
                                                             />
                                                         </div>
 
-                                                        <div className="px-6 pb-8 -mt-16 relative z-10">
+                                                        <div className="px-6 pb-8 -mt-12 sm:-mt-16 relative z-10">
                                                             <div className="relative inline-block mb-4 translate-x-3">
                                                                 <div className={`absolute -inset-2 rounded-full opacity-30 blur-xl animate-pulse ${displayFrame?.includes('blue-neon') ? 'bg-[#8b5cf6]' :
                                                                     displayFrame?.includes('bronze') ? 'bg-[#cd7f32]' : ''
                                                                     }`} style={{ background: !displayFrame ? LEAGUE_COLORS[displayLeague] : undefined }} />
 
-                                                                <div className="relative w-32 h-32 rounded-full border-[3px] border-[#0d0d0f] bg-[#121214] shadow-2xl flex items-center justify-center">
+                                                                <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full border-[3px] border-[#0d0d0f] bg-[#121214] shadow-2xl flex items-center justify-center">
                                                                     <div className="absolute inset-0 bg-gradient-to-tr from-black/60 to-transparent z-10 pointer-events-none rounded-full" />
                                                                     <UserAvatar
                                                                         src={displayPhoto}
@@ -670,7 +670,7 @@ function ChatContent() {
 
                                                             <div>
                                                                 <div className="flex items-center justify-between mb-3">
-                                                                    <h3 className={`text-3xl font-black tracking-tighter text-transparent bg-clip-text ${displayFrame?.includes('blue-neon') ? 'bg-gradient-to-b from-white via-[#a78bfa] to-[#8b5cf6]' :
+                                                                    <h3 className={`text-2xl sm:text-3xl font-black tracking-tighter text-transparent bg-clip-text ${displayFrame?.includes('blue-neon') ? 'bg-gradient-to-b from-white via-[#a78bfa] to-[#8b5cf6]' :
                                                                         displayFrame?.includes('bronze') ? 'bg-gradient-to-b from-[#f5d5b5] via-[#cd7f32] to-[#8b4513]' :
                                                                             'bg-gradient-to-b from-white to-white/60'
                                                                         }`}>{displayName}</h3>
