@@ -588,9 +588,9 @@ function ChatContent() {
                                                     </button>
                                                 </PopoverTrigger>
                                                 <PopoverContent
-                                                    className="w-80 sm:w-96 bg-[#0d0d0f] border-none p-0 overflow-hidden text-white shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[2rem] z-[100]"
-                                                    side="right"
-                                                    align="start"
+                                                    className="w-[90vw] sm:w-96 bg-[#0d0d0f] border-none p-0 overflow-hidden text-white shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[2rem] z-[100] max-h-[80vh] overflow-y-auto"
+                                                    side="bottom"
+                                                    align="center"
                                                     sideOffset={10}
                                                 >
                                                     {/* Dynamic Frame-Based Fantasy Profile Popup */}

@@ -67,7 +67,7 @@ const SHOP_ITEMS: ShopItem[] = [
         description: "A classic bronze frame for participants.",
         cost: 200,
         type: "cosmetic",
-        icon: "/frames/bronze.png",
+        icon: "/frames/frame-bronze.png",
     },
 ];
 

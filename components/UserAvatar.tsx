@@ -48,7 +48,7 @@ export default function UserAvatar({
     if (normalizedFrame === "/frames/frame-1.png") normalizedFrame = "/frames/frame-blue-neon.png";
 
     const framePath = normalizedFrame && !normalizedFrame.startsWith("/") && !normalizedFrame.startsWith("http")
-        ? `/frames/${normalizedFrame.toLowerCase().split("_").join("-")}.png`
+        ? `/frames/${normalizedFrame === "Bronze" ? "frame-bronze" : normalizedFrame.toLowerCase().split("_").join("-")}.png`
         : normalizedFrame;
 
     const glowStyle = league === "Diamond"
