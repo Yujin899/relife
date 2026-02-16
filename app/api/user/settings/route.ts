@@ -38,14 +38,14 @@ export async function POST(request: NextRequest) {
             // specific logic: if frame starts with "frame_", user must own it.
             // if frame is null/empty, user is unevenquiping.
             if (frame && frame.startsWith("/frames/") && !inventory.includes(frame.split("/").pop()?.split(".")[0] || "")) {
-                // This check is a bit tricky because the item ID is "frame_1" but the URL is "/frames/frame-1.png".
+                // This check is a bit tricky because the item ID is \"frame_blue_neon\" but the URL is \"/frames/frame-blue-neon.png\".
                 // Let's relax the server-side check slightly or align the ID/URL mapping.
-                // Current Shop Item ID: "frame_1", Icon: "/frames/frame-1.png"
+                // Current Shop Item ID: \"frame_blue_neon\", Icon: \"/frames/frame-blue-neon.png\"
                 // Let's rely on the client sending the *Item ID* for verification, or just trust the inventory check if we pass ID.
                 // Actually, the previous implementation stored the *URL* in the user's `frame` field.
                 // So the client sends the URL.
                 // Strict check:
-                // ID "frame_1" -> URL "/frames/frame-1.png"
+                // ID \"frame_blue_neon\" -\u003e URL \"/frames/frame-blue-neon.png\"
                 // We need a mapping or we just check if "frame_1" is in inventory.
                 // Let's assume the client sends the ITEM ID for "equipping" and we resolve the URL here?
                 // OR the client sends the URL and we check ownership.
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
             // REVISED STRATEGY: 
             // Request body: { frame: "frame_1" } (Item ID)
-            // Logic: Check if "frame_1" in inventory. If so, set frame = "/frames/frame-1.png".
+            // Logic: Check if \"frame_blue_neon\" in inventory. If so, set frame = \"/frames/frame-blue-neon.png\".
             // If frame === null, set frame = null.
 
             if (frame === null) {
@@ -84,13 +84,14 @@ export async function POST(request: NextRequest) {
                     } else {
                         return NextResponse.json({ error: "League rank too low" }, { status: 403 });
                     }
-                } else if (inventory.includes(frame)) {
+                } else if (inventory.includes(frame) || (frame === "frame_blue_neon" && inventory.includes("frame_1"))) {
                     // Logic for purchased frames (e.g. frame_1)
-                    if (frame.startsWith("frame_")) {
-                        const filename = frame.replace("_", "-") + ".png";
+                    const effectiveFrame = (frame === "frame_blue_neon" && inventory.includes("frame_1") && !inventory.includes("frame_blue_neon")) ? "frame_blue_neon" : frame;
+                    if (effectiveFrame.startsWith("frame_")) {
+                        const filename = effectiveFrame.split("_").join("-") + ".png";
                         updateData.frame = `/frames/${filename}`;
                     } else {
-                        updateData.frame = frame;
+                        updateData.frame = effectiveFrame;
                     }
                 } else {
                     return NextResponse.json({ error: "Frame not owned" }, { status: 403 });

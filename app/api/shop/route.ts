@@ -54,12 +54,20 @@ const SHOP_ITEMS: ShopItem[] = [
         limit: 99,
     },
     {
-        id: "frame_1",
-        name: "Neon Blue Frame",
-        description: "A cool neon blue frame for your avatar.",
+        id: "frame_blue_neon",
+        name: "Blue Neon Frame",
+        description: "A futuristic glowing neon frame.",
         cost: 500,
         type: "cosmetic",
-        icon: "/frames/frame-1.png", // Using the path directly as icon
+        icon: "/frames/frame-blue-neon.png", // Using the path directly as icon
+    },
+    {
+        id: "frame_bronze",
+        name: "Bronze Frame",
+        description: "A classic bronze frame for participants.",
+        cost: 200,
+        type: "cosmetic",
+        icon: "/frames/bronze.png",
     },
 ];
 

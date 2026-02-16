@@ -114,6 +114,31 @@ function ChatContent() {
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const [longPressedMessage, setLongPressedMessage] = useState<Message | null>(null);
+    const [menuPosition, setMenuPosition] = useState<{ x: number, y: number } | null>(null);
+    const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+
+    const handleTouchStart = (msg: Message, e: React.TouchEvent | React.MouseEvent) => {
+        // Prevent trigger on right click if we handle it via onContextMenu
+        if ('button' in e && e.button === 2) return;
+
+        const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+        const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+
+        longPressTimer.current = setTimeout(() => {
+            setLongPressedMessage(msg);
+            setMenuPosition({ x: clientX, y: clientY });
+            if (navigator.vibrate) navigator.vibrate(50);
+        }, 500);
+    };
+
+    const handleTouchEnd = () => {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+        }
+    };
+
     const userLeague = getLeague(profile?.totalGold || 0);
     const currentChannel = CHANNELS.find(c => c.id === channelId) || CHANNELS[0];
 
@@ -128,7 +153,7 @@ function ChatContent() {
 
     // Presence System
     useEffect(() => {
-        if (!user || !profile) return;
+        if (!user || !profile || !userLeague.name) return;
 
         const connectedRef = ref(rtdb, ".info/connected");
         const userStatusRef = ref(rtdb, `status/${user.uid}`);
@@ -516,13 +541,17 @@ function ChatContent() {
                                     dragConstraints={{ left: -100, right: 0 }}
                                     dragSnapToOrigin={true}
                                     dragElastic={0.1}
-                                    onDragEnd={(_, info) => {
-                                        if (info.offset.x < -40) {
-                                            setReplyingTo(msg);
-                                            inputRef.current?.focus();
-                                        }
+                                    onMouseDown={(e) => handleTouchStart(msg, e)}
+                                    onMouseUp={handleTouchEnd}
+                                    onMouseLeave={handleTouchEnd}
+                                    onTouchStart={(e) => handleTouchStart(msg, e)}
+                                    onTouchEnd={handleTouchEnd}
+                                    onContextMenu={(e) => {
+                                        e.preventDefault();
+                                        setLongPressedMessage(msg);
+                                        setMenuPosition({ x: e.clientX, y: e.clientY });
                                     }}
-                                    className={`flex flex-col group ${!showAvatar ? "" : "mt-4"} py-1 px-4 sm:px-8 transition-colors relative touch-pan-y ${msg.replyToUid === user?.uid ? 'bg-[#f0b232]/[0.08]' : 'hover:bg-white/[0.02]'}`}
+                                    className={`flex flex-col group ${!showAvatar ? "" : "mt-4"} py-1 px-4 sm:px-8 transition-colors relative touch-none ${msg.replyToUid === user?.uid ? 'bg-[#f0b232]/[0.08]' : 'hover:bg-white/[0.02]'}`}
                                 >
                                     {/* Reply Line (Discord style) */}
                                     {msg.replyTo && (
@@ -558,30 +587,150 @@ function ChatContent() {
                                                         />
                                                     </button>
                                                 </PopoverTrigger>
-                                                <PopoverContent className="w-80 bg-[#121212] border-white/10 p-0 overflow-hidden text-white" side="right" align="start">
-                                                    <div className="h-20 bg-blue-600/20 relative" />
-                                                    <div className="px-6 pb-6 -mt-10 relative">
-                                                        <div className="relative z-10 w-20 h-20 rounded-full border-4 border-[#121212] bg-[#181818] shadow-lg flex items-center justify-center">
-                                                            <UserAvatar
-                                                                src={displayPhoto}
-                                                                fallback={displayName}
-                                                                league={displayLeague}
-                                                                frame={displayFrame}
-                                                                size="lg"
-                                                                className="w-full h-full text-2xl"
+                                                <PopoverContent
+                                                    className="w-80 sm:w-96 bg-[#0d0d0f] border-none p-0 overflow-hidden text-white shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-[2rem] z-[100]"
+                                                    side="right"
+                                                    align="start"
+                                                    sideOffset={10}
+                                                >
+                                                    {/* Dynamic Frame-Based Fantasy Profile Popup */}
+                                                    <div className={`relative group/fantasy overflow-hidden transition-all duration-700 ${displayFrame?.includes('blue-neon') ? 'bg-[#0f091a]' :
+                                                        displayFrame?.includes('bronze') ? 'bg-[#0f0d0b]' : 'bg-[#0d0d0f]'
+                                                        }`}>
+                                                        {/* Animated Border Glow */}
+                                                        <div
+                                                            className="absolute -inset-px opacity-40 group-hover/fantasy:opacity-60 transition-opacity duration-1000 rounded-[2rem] z-0"
+                                                            style={{
+                                                                background: displayFrame?.includes('blue-neon')
+                                                                    ? `linear-gradient(45deg, #8b5cf6 0%, transparent 40%, transparent 60%, #2dd4bf 100%)`
+                                                                    : displayFrame?.includes('bronze')
+                                                                        ? `linear-gradient(45deg, #cd7f32 0%, transparent 40%, transparent 60%, #cd7f32 100%)`
+                                                                        : `linear-gradient(45deg, ${LEAGUE_COLORS[displayLeague]}44, transparent, ${LEAGUE_COLORS[displayLeague]}44)`,
+                                                                padding: '1px'
+                                                            }}
+                                                        />
+
+                                                        {/* Dynamic Banner */}
+                                                        <div
+                                                            className="h-32 relative overflow-hidden"
+                                                            style={{
+                                                                background: displayFrame?.includes('blue-neon')
+                                                                    ? 'linear-gradient(135deg, #2e1065 0%, #0f091a 100%)'
+                                                                    : displayFrame?.includes('bronze')
+                                                                        ? 'linear-gradient(135deg, #2a1a0a 0%, #0f0d0b 100%)'
+                                                                        : `linear-gradient(135deg, ${LEAGUE_COLORS[displayLeague]}33 0%, #0d0d0f 100%)`,
+                                                            }}
+                                                        >
+                                                            {/* Pattern Overlays */}
+                                                            {displayFrame?.includes('blue-neon') ? (
+                                                                <>
+                                                                    <div className="absolute inset-0 opacity-[0.1]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #8b5cf6 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+                                                                    <motion.div
+                                                                        animate={{
+                                                                            scale: [1, 1.2, 1],
+                                                                            opacity: [0.1, 0.2, 0.1]
+                                                                        }}
+                                                                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                                                                        className="absolute inset-0 bg-gradient-to-tr from-[#8b5cf644] via-transparent to-[#2dd4bf22] blur-3xl"
+                                                                    />
+                                                                </>
+                                                            ) : displayFrame?.includes('bronze') ? (
+                                                                <>
+                                                                    <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(#cd7f32 0.5px, transparent 0.5px)', backgroundSize: '10px 10px' }} />
+                                                                </>
+                                                            ) : (
+                                                                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                                                            )}
+
+                                                            <motion.div
+                                                                animate={{ x: ['100%', '-100%'] }}
+                                                                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                                                                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent w-full -skew-x-12"
                                                             />
                                                         </div>
-                                                        <div className="mt-3">
-                                                            <h3 className="text-xl font-bold mb-0.5">{displayName}</h3>
-                                                            <div className="flex items-center gap-1.5 mb-4">
-                                                                <LeagueIcon className="w-3.5 h-3.5" style={{ color: LEAGUE_COLORS[displayLeague] }} />
-                                                                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: LEAGUE_COLORS[displayLeague] }}>
-                                                                    {displayLeague} League
-                                                                </span>
+
+                                                        <div className="px-6 pb-8 -mt-16 relative z-10">
+                                                            <div className="relative inline-block mb-4 translate-x-3">
+                                                                <div className={`absolute -inset-2 rounded-full opacity-30 blur-xl animate-pulse ${displayFrame?.includes('blue-neon') ? 'bg-[#8b5cf6]' :
+                                                                    displayFrame?.includes('bronze') ? 'bg-[#cd7f32]' : ''
+                                                                    }`} style={{ background: !displayFrame ? LEAGUE_COLORS[displayLeague] : undefined }} />
+
+                                                                <div className="relative w-32 h-32 rounded-full border-[3px] border-[#0d0d0f] bg-[#121214] shadow-2xl flex items-center justify-center">
+                                                                    <div className="absolute inset-0 bg-gradient-to-tr from-black/60 to-transparent z-10 pointer-events-none rounded-full" />
+                                                                    <UserAvatar
+                                                                        src={displayPhoto}
+                                                                        fallback={displayName}
+                                                                        league={displayLeague}
+                                                                        frame={displayFrame}
+                                                                        size="full"
+                                                                        className="w-full h-full scale-110"
+                                                                    />
+                                                                </div>
                                                             </div>
-                                                            <div className="h-px bg-white/5 mb-4" />
-                                                            <div className="space-y-3 font-mono text-xs text-white/30 truncate select-all bg-white/5 p-2 rounded">
-                                                                {msg.uid}
+
+                                                            <div>
+                                                                <div className="flex items-center justify-between mb-3">
+                                                                    <h3 className={`text-3xl font-black tracking-tighter text-transparent bg-clip-text ${displayFrame?.includes('blue-neon') ? 'bg-gradient-to-b from-white via-[#a78bfa] to-[#8b5cf6]' :
+                                                                        displayFrame?.includes('bronze') ? 'bg-gradient-to-b from-[#f5d5b5] via-[#cd7f32] to-[#8b4513]' :
+                                                                            'bg-gradient-to-b from-white to-white/60'
+                                                                        }`}>{displayName}</h3>
+                                                                    <div className={`p-2 rounded-xl bg-white/5 border border-white/10 shadow-inner ${displayFrame?.includes('blue-neon') ? 'border-[#00f2ff44] shadow-[#00f2ff22]' :
+                                                                        displayFrame?.includes('bronze') ? 'border-[#cd7f3244] shadow-[#cd7f3222]' : ''
+                                                                        }`}>
+                                                                        <LeagueIcon className="w-6 h-6" style={{
+                                                                            color: displayFrame?.includes('blue-neon') ? '#2dd4bf' :
+                                                                                displayFrame?.includes('bronze') ? '#cd7f32' :
+                                                                                    LEAGUE_COLORS[displayLeague]
+                                                                        }} />
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className={`inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-xl border mb-6 transition-all ${displayFrame?.includes('blue-neon') ? 'bg-[#8b5cf611] border-[#8b5cf633]' :
+                                                                    displayFrame?.includes('bronze') ? 'bg-[#cd7f3211] border-[#cd7f3233]' :
+                                                                        'bg-white/5 border-white/10'
+                                                                    }`}>
+                                                                    <div className={`w-2 h-2 rounded-full animate-pulse shadow-[0_0_8px_currentColor] ${displayFrame?.includes('blue-neon') ? 'bg-[#2dd4bf] text-[#2dd4bf]' :
+                                                                        displayFrame?.includes('bronze') ? 'bg-[#cd7f32] text-[#cd7f32]' :
+                                                                            'bg-green-500 text-green-500'
+                                                                        }`} />
+                                                                    <span className={`text-[11px] font-black uppercase tracking-[0.2em] ${displayFrame?.includes('blue-neon') ? 'text-[#a78bfa]' :
+                                                                        displayFrame?.includes('bronze') ? 'text-[#cd7f32]' :
+                                                                            'text-white/60'
+                                                                        }`}>
+                                                                        {displayFrame?.includes('blue-neon') ? `${displayLeague.toUpperCase()} RANK` :
+                                                                            displayFrame?.includes('bronze') ? 'BRONZE_LEGACY' :
+                                                                                `${displayLeague} RANK`} • ONLINE
+                                                                    </span>
+                                                                </div>
+
+                                                                <div className="grid grid-cols-2 gap-3 mb-6">
+                                                                    <div className={`p-4 rounded-[1.5rem] relative overflow-hidden group/card transition-all hover:scale-[1.02] ${displayFrame?.includes('blue-neon') ? 'bg-[#8b5cf608] border border-[#8b5cf611]' :
+                                                                        displayFrame?.includes('bronze') ? 'bg-[#cd7f3208] border border-[#cd7f3211]' :
+                                                                            'bg-white/5 border border-white/5'
+                                                                        }`}>
+                                                                        <div className="text-[9px] text-white/30 uppercase font-black mb-1">Status</div>
+                                                                        <div className="text-xs font-bold text-white/90">Studying</div>
+                                                                        <Zap className={`absolute top-0 right-0 p-2 w-7 h-7 opacity-5 group-hover/card:opacity-20 transition-all ${displayFrame?.includes('blue-neon') ? 'text-[#8b5cf6]' :
+                                                                            displayFrame?.includes('bronze') ? 'text-[#cd7f32]' : 'text-white'
+                                                                            }`} />
+                                                                    </div>
+                                                                    <div className={`p-4 rounded-[1.5rem] relative overflow-hidden group/card transition-all hover:scale-[1.02] ${displayFrame?.includes('blue-neon') ? 'bg-[#8b5cf608] border border-[#8b5cf611]' :
+                                                                        displayFrame?.includes('bronze') ? 'bg-[#cd7f3208] border border-[#cd7f3211]' :
+                                                                            'bg-white/5 border border-white/5'
+                                                                        }`}>
+                                                                        <div className="text-[9px] text-white/30 uppercase font-black mb-1">Activity</div>
+                                                                        <div className="text-xs font-bold text-white/90">Writing...</div>
+                                                                        <Edit2 className={`absolute top-0 right-0 p-2 w-7 h-7 opacity-5 group-hover/card:opacity-20 transition-all ${displayFrame?.includes('blue-neon') ? 'text-[#8b5cf6]' :
+                                                                            displayFrame?.includes('bronze') ? 'text-[#cd7f32]' : 'text-white'
+                                                                            }`} />
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className={`group/uid p-3 bg-black/40 border border-white/5 rounded-2xl font-mono text-[9px] text-white/20 select-all transition-all hover:text-white/60 hover:border-white/20 break-all cursor-pointer ${displayFrame?.includes('blue-neon') ? 'hover:border-[#8b5cf622] text-[#8b5cf622]' :
+                                                                    displayFrame?.includes('bronze') ? 'hover:border-[#cd7f3222] text-[#cd7f3222]' : ''
+                                                                    }`}>
+                                                                    <span className="opacity-40 group-hover/uid:opacity-100 transition-opacity">AUTH_SIGNATURE:</span> {msg.uid}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -766,6 +915,65 @@ function ChatContent() {
                     font-family: 'Cairo', sans-serif;
                 }
             `}</style>
-        </div>
+            {/* Chat Message Context Menu (Discord Style) */}
+            <AnimatePresence>
+                {longPressedMessage && menuPosition && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-150 bg-black/20 backdrop-blur-[2px]"
+                            onClick={() => setLongPressedMessage(null)}
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 10 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 10 }}
+                            className="fixed z-160 w-48 bg-[#18191c] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1.5"
+                            style={{
+                                left: Math.min(menuPosition.x, typeof window !== 'undefined' ? window.innerWidth - 200 : 0),
+                                top: Math.min(menuPosition.y, typeof window !== 'undefined' ? window.innerHeight - 200 : 0)
+                            }}
+                        >
+                            <button
+                                onClick={() => {
+                                    setReplyingTo(longPressedMessage);
+                                    setLongPressedMessage(null);
+                                    inputRef.current?.focus();
+                                }}
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-white/70 hover:bg-[#5865f2] hover:text-white transition-colors"
+                            >
+                                <Reply className="w-4 h-4" /> Reply
+                            </button>
+
+                            {longPressedMessage.uid === user?.uid && (
+                                <>
+                                    <button
+                                        onClick={() => {
+                                            handleEditMessage(longPressedMessage);
+                                            setLongPressedMessage(null);
+                                        }}
+                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-white/70 hover:bg-[#5865f2] hover:text-white transition-colors"
+                                    >
+                                        <Edit2 className="w-4 h-4" /> Edit Message
+                                    </button>
+                                    <div className="h-px bg-white/5 my-1" />
+                                    <button
+                                        onClick={() => {
+                                            handleDeleteMessage(longPressedMessage.id);
+                                            setLongPressedMessage(null);
+                                        }}
+                                        className="w-full flex items-center gap-3 px-3 py-2 text-sm font-bold text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                                    >
+                                        <Trash2 className="w-4 h-4" /> Delete Message
+                                    </button>
+                                </>
+                            )}
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </div >
     );
 }

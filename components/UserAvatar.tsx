@@ -44,9 +44,12 @@ export default function UserAvatar({
     const borderColor = LEAGUE_COLORS[league] || LEAGUE_COLORS["Bronze"];
 
     // Normalize frame path
-    const framePath = frame && !frame.startsWith("/") && !frame.startsWith("http")
-        ? `/frames/${frame.toLowerCase()}.png`
-        : frame;
+    let normalizedFrame = frame;
+    if (normalizedFrame === "/frames/frame-1.png") normalizedFrame = "/frames/frame-blue-neon.png";
+
+    const framePath = normalizedFrame && !normalizedFrame.startsWith("/") && !normalizedFrame.startsWith("http")
+        ? `/frames/${normalizedFrame.toLowerCase().split("_").join("-")}.png`
+        : normalizedFrame;
 
     const glowStyle = league === "Diamond"
         ? `0 0 10px ${borderColor}`
@@ -55,7 +58,7 @@ export default function UserAvatar({
             : "none";
 
     return (
-        <div className={`relative group/avatar ${size === 'full' ? 'w-full h-full flex items-center justify-center' : ''} ${className}`}>
+        <div className={`relative group/avatar flex items-center justify-center ${size === 'full' ? 'w-full h-full' : ''} ${className}`}>
             <div
                 onClick={editable ? onEdit : undefined}
                 className={`${SIZE_CLASSES[size]} rounded-full flex items-center justify-center shrink-0 relative z-10 transition-transform ${editable ? "cursor-pointer hover:opacity-90 active:scale-95" : ""}`}

@@ -260,7 +260,10 @@ function ProfileContent() {
         );
     }
 
-    const inventoryItems = shopItems.filter(item => profile.inventory.includes(item.id));
+    const inventoryItems = shopItems.filter(item =>
+        profile.inventory.includes(item.id) ||
+        (item.id === "frame_blue_neon" && profile.inventory.includes("frame_1"))
+    );
     const filteredItems = inventoryItems.filter(item => {
         if (activeTab === "all") return true;
         if (activeTab === "frames") return item.id.startsWith("frame_");
