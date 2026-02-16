@@ -208,11 +208,11 @@ function QuizContent() {
                 <div className="flex items-center justify-between mb-8">
                     <button
                         onClick={() => router.push("/dashboard")}
-                        className="text-sm text-foreground/50 hover:text-foreground transition cursor-pointer"
+                        className="text-xs sm:text-sm text-foreground/50 hover:text-foreground transition cursor-pointer"
                     >
                         ← Exit
                     </button>
-                    <span className="text-sm text-foreground/40 font-medium">
+                    <span className="text-xs sm:text-sm text-foreground/40 font-medium">
                         Question {currentIndex + 1} of {totalQuestions}
                     </span>
                 </div>
@@ -227,7 +227,7 @@ function QuizContent() {
                                 </span>
                             )}
                         </div>
-                        <h2 className="text-lg font-semibold mb-6 leading-relaxed">
+                        <h2 className="text-base sm:text-lg font-semibold mb-6 leading-relaxed">
                             {currentQuestion.text}
                         </h2>
 
@@ -260,7 +260,7 @@ function QuizContent() {
                                         key={option.id}
                                         onClick={() => handleSelect(option.id)}
                                         disabled={isChecked}
-                                        className={`w-full text-left px-4 py-4 rounded-2xl border text-sm transition-all duration-200 cursor-pointer ${stateClass}`}
+                                        className={`w-full text-left px-3 py-3 sm:px-4 sm:py-4 rounded-2xl border text-[13px] sm:text-sm transition-all duration-200 cursor-pointer ${stateClass}`}
                                     >
                                         <div className="flex items-center gap-4">
                                             <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? (isChecked ? (isCorrectAnswer ? "bg-green-500 border-green-500" : "bg-red-500 border-red-500") : "bg-foreground border-foreground") : "border-foreground/10"
@@ -310,7 +310,7 @@ function QuizContent() {
                         {isAnswered && !isChecked && (
                             <button
                                 onClick={handleCheck}
-                                className="px-8 py-2.5 rounded-xl border border-foreground font-medium text-sm hover:bg-foreground hover:text-background transition transform active:scale-95 cursor-pointer"
+                                className="px-6 sm:px-8 py-2.5 rounded-xl border border-foreground font-medium text-xs sm:text-sm hover:bg-foreground hover:text-background transition transform active:scale-95 cursor-pointer"
                             >
                                 Check
                             </button>
@@ -321,7 +321,7 @@ function QuizContent() {
                                 {currentIndex < totalQuestions - 1 ? (
                                     <button
                                         onClick={() => setCurrentIndex(currentIndex + 1)}
-                                        className="px-8 py-2.5 rounded-xl bg-foreground text-background text-sm font-bold hover:opacity-90 transition transform active:scale-95 cursor-pointer"
+                                        className="px-6 sm:px-8 py-2.5 rounded-xl bg-foreground text-background text-xs sm:text-sm font-bold hover:opacity-90 transition transform active:scale-95 cursor-pointer"
                                     >
                                         Next
                                     </button>
@@ -329,7 +329,7 @@ function QuizContent() {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={!allAnswered || submitting}
-                                        className="px-8 py-2.5 rounded-xl bg-foreground text-background text-sm font-bold hover:opacity-90 transition disabled:opacity-50 transform active:scale-95 cursor-pointer"
+                                        className="px-6 sm:px-8 py-2.5 rounded-xl bg-foreground text-background text-xs sm:text-sm font-bold hover:opacity-90 transition disabled:opacity-50 transform active:scale-95 cursor-pointer"
                                     >
                                         {submitting ? "Submitting..." : `Finish (${answeredCount}/${totalQuestions})`}
                                     </button>

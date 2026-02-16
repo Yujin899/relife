@@ -38,14 +38,12 @@ export async function GET(
 
         const quizzes: QuizData[] = quizzesSnapshot.docs.map((doc) => {
             const data = doc.data();
+            const id = doc.id; // Use Firestore Document ID
             return {
-                id: data.id,
-                title: data.title,
-                description: data.description,
-                questionCount: data.questionCount,
-                completed: completedQuizIds.has(data.id),
-                ...data
-            };
+                ...data,
+                id,
+                completed: completedQuizIds.has(id),
+            } as QuizData;
         });
 
         // Sort by title alphabetically
