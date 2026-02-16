@@ -15,10 +15,8 @@ import {
     Loader2,
     Camera,
     Medal,
-    Shield,
     ChevronLeft,
-    ChevronRight,
-    Search,
+    LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import Script from "next/script";
@@ -264,48 +262,63 @@ function ProfileContent() {
         <div className="min-h-screen bg-background text-foreground pb-20 sm:pb-0">
             <Script src="https://widget.cloudinary.com/v2.0/global/all.js" strategy="lazyOnload" />
 
-            <header className="pt-8 pb-12 px-4 bg-gradient-to-b from-foreground/5 to-transparent border-b border-foreground/5">
-                <div className="max-w-2xl mx-auto flex flex-col items-center">
-                    <div className="relative mb-6 group/avatar">
-                        <UserAvatar
-                            src={profile.photoURL}
-                            fallback={profile.displayName}
-                            frame={profile.frame}
-                            size="xl"
-                            className="w-32 h-32 text-4xl shadow-2xl"
-                            editable={true}
-                            onEdit={() => document.getElementById("avatar-input")?.click()}
-                        />
-                        <input
-                            id="avatar-input"
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handleAvatarEdit}
-                        />
-                        {uploading && (
-                            <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center z-30">
-                                <Loader2 className="w-8 h-8 animate-spin text-white" />
-                            </div>
-                        )}
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-background border border-foreground/10 px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap">
-                            <Trophy className="w-3 h-3 text-yellow-500" />
-                            <span className="text-xs font-bold text-foreground/80">{profile?.league || "Bronze"}</span>
-                        </div>
+            <header className="pt-6 pb-12 px-4 bg-gradient-to-b from-foreground/5 to-transparent border-b border-foreground/5">
+                <div className="max-w-2xl mx-auto">
+                    <div className="flex items-center justify-between mb-8">
+                        <Link href="/dashboard" className="p-2 -ml-2 text-foreground/40 hover:text-foreground transition flex items-center gap-1">
+                            <ChevronLeft className="w-5 h-5" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Back</span>
+                        </Link>
+                        <button
+                            onClick={() => signOut()}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/5 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/10 transition-all border border-red-500/10"
+                        >
+                            <LogOut className="w-3 h-3" />
+                            Sign Out
+                        </button>
                     </div>
-
-                    <h1 className="text-2xl font-black tracking-tight mb-2 text-center">{profile?.displayName || "Adventurer"}</h1>
-
-                    <div className="flex items-center gap-2 text-sm font-medium text-foreground/60">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 text-yellow-500 rounded-full border border-yellow-500/20">
-                            <span className="font-black">{profile?.totalGold?.toLocaleString() || 0}</span> G
-                        </div>
-                        {profile?.profileUpdates !== undefined && (
-                            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${profile.profileUpdates > 0 ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "bg-foreground/5 text-foreground/40 border-foreground/5"}`}>
-                                <Camera className="w-3 h-3" />
-                                <span className="font-black">{profile.profileUpdates}</span>
+                    <div className="flex flex-col items-center">
+                        <div className="relative mb-6 group/avatar">
+                            <UserAvatar
+                                src={profile.photoURL}
+                                fallback={profile.displayName}
+                                frame={profile.frame}
+                                size="xl"
+                                className="w-32 h-32 text-4xl shadow-2xl"
+                                editable={true}
+                                onEdit={() => document.getElementById("avatar-input")?.click()}
+                            />
+                            <input
+                                id="avatar-input"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleAvatarEdit}
+                            />
+                            {uploading && (
+                                <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center z-30">
+                                    <Loader2 className="w-8 h-8 animate-spin text-white" />
+                                </div>
+                            )}
+                            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-background border border-foreground/10 px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+                                <Trophy className="w-3 h-3 text-yellow-500" />
+                                <span className="text-xs font-bold text-foreground/80">{profile?.league || "Bronze"}</span>
                             </div>
-                        )}
+                        </div>
+
+                        <h1 className="text-2xl font-black tracking-tight mb-2 text-center">{profile?.displayName || "Adventurer"}</h1>
+
+                        <div className="flex items-center gap-2 text-sm font-medium text-foreground/60 mb-6">
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 text-yellow-500 rounded-full border border-yellow-500/20">
+                                <span className="font-black">{profile?.totalGold?.toLocaleString() || 0}</span> G
+                            </div>
+                            {profile?.profileUpdates !== undefined && (
+                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${profile.profileUpdates > 0 ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "bg-foreground/5 text-foreground/40 border-foreground/5"}`}>
+                                    <Camera className="w-3 h-3" />
+                                    <span className="font-black">{profile.profileUpdates}</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </header>
@@ -342,10 +355,10 @@ function ProfileContent() {
                             {badges.map((badge) => (
                                 <div
                                     key={badge.id}
-                                    className="flex-shrink-0 w-24 p-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 text-center flex flex-col items-center group hover:border-amber-500/40 transition-all shadow-sm"
+                                    className="flex-shrink-0 w-28 p-4 rounded-[2rem] border border-amber-500/20 bg-gradient-to-b from-amber-500/10 to-transparent text-center flex flex-col items-center group hover:border-amber-500/40 transition-all shadow-lg shadow-amber-500/5"
                                 >
-                                    <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">{badge.icon}</div>
-                                    <p className="text-[10px] font-bold text-foreground truncate w-full">{badge.name}</p>
+                                    <div className="text-3xl mb-3 group-hover:scale-125 transition-transform drop-shadow-lg">{badge.icon}</div>
+                                    <p className="text-[10px] font-black text-amber-900/80 dark:text-amber-200/80 uppercase tracking-tight truncate w-full">{badge.name}</p>
                                 </div>
                             ))}
                         </div>
@@ -390,7 +403,9 @@ function ProfileContent() {
                                     <p className="text-xs text-foreground/50 truncate">Classic Look</p>
                                 </div>
                                 {profile?.activeTheme === "default" ? (
-                                    <div className="px-3 py-1 bg-green-500/10 text-green-600 rounded-full text-[10px] font-bold">Active</div>
+                                    <div className="px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[10px] font-bold flex items-center gap-1">
+                                        <Check className="w-3 h-3" /> Equipped
+                                    </div>
                                 ) : (
                                     <button
                                         onClick={() => handleEquip({ id: "theme_default", name: "Default", type: "cosmetic" } as any)}
@@ -431,7 +446,7 @@ function ProfileContent() {
                                         <motion.div
                                             key={frameId}
                                             layout
-                                            className={`relative p-4 rounded-2xl border transition-all flex items-center gap-4 group ${isEquipped ? "border-green-500/30 bg-green-500/5" : "border-foreground/10 bg-background hover:border-foreground/20"}`}
+                                            className={`relative p-4 rounded-2xl border transition-all flex items-center gap-4 group ${isEquipped ? "border-blue-500/30 bg-blue-500/5" : "border-foreground/10 bg-background hover:border-foreground/20"}`}
                                         >
                                             <div className="w-12 h-12 flex-shrink-0 bg-foreground/5 rounded-xl flex items-center justify-center text-2xl overflow-hidden relative">
                                                 <UserAvatar src={profile.photoURL} fallback={profile.displayName} league={l} frame={null} size="sm" />
@@ -442,7 +457,7 @@ function ProfileContent() {
                                             </div>
                                             <div className="flex-shrink-0">
                                                 {isEquipped ? (
-                                                    <div className="px-3 py-1 bg-green-500/10 text-green-600 rounded-full text-[10px] font-bold flex items-center gap-1"><Check className="w-3 h-3" /> Active</div>
+                                                    <div className="px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[10px] font-bold flex items-center gap-1"><Check className="w-3 h-3" /> Equipped</div>
                                                 ) : (
                                                     <button onClick={() => handleEquip({ id: frameId, name: `${l} Frame`, type: "cosmetic", icon: l } as any)} className="px-3 py-1.5 bg-foreground text-background rounded-lg text-xs font-bold sm:opacity-0 group-hover:opacity-100 transition-opacity">Equip</button>
                                                 )}
@@ -461,7 +476,7 @@ function ProfileContent() {
                                 <motion.div
                                     key={item.id}
                                     layout
-                                    className={`relative p-4 rounded-2xl border transition-all flex items-center gap-4 group ${isEquipped ? "border-green-500/30 bg-green-500/5" : "border-foreground/10 bg-background hover:border-foreground/20"}`}
+                                    className={`relative p-4 rounded-2xl border transition-all flex items-center gap-4 group ${isEquipped ? "border-blue-500/30 bg-blue-500/5" : "border-foreground/10 bg-background hover:border-foreground/20"}`}
                                 >
                                     <div className="w-12 h-12 flex-shrink-0 bg-foreground/5 rounded-xl flex items-center justify-center text-2xl overflow-hidden relative">
                                         {item.id.startsWith("frame_") ? (
@@ -476,7 +491,7 @@ function ProfileContent() {
                                     </div>
                                     <div className="flex-shrink-0">
                                         {isEquipped ? (
-                                            <div className="px-3 py-1 bg-green-500/10 text-green-600 rounded-full text-[10px] font-bold flex items-center gap-1"><Check className="w-3 h-3" /> Active</div>
+                                            <div className="px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[10px] font-bold flex items-center gap-1"><Check className="w-3 h-3" /> Equipped</div>
                                         ) : (
                                             item.type === "cosmetic" && (
                                                 <button onClick={() => handleEquip(item)} className="px-3 py-1.5 bg-foreground text-background rounded-lg text-xs font-bold sm:opacity-0 group-hover:opacity-100 transition-opacity">Equip</button>

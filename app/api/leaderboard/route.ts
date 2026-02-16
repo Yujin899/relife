@@ -31,17 +31,15 @@ export async function GET(request: NextRequest) {
                 .map((doc) => doc.data())
                 .sort((a, b) => (b.totalGold || 0) - (a.totalGold || 0));
 
-            // Filter for public view but calculate rank from full list
-            const publicLeaderboard = allUsers.filter(u => u.settings?.isPrivate !== true || u.uid === uid);
-
-            leaderboard = publicLeaderboard.slice(0, 50).map((data) => ({
-                rank: allUsers.findIndex(u => u.uid === data.uid) + 1,
-                uid: data.uid,
-                displayName: (data.settings?.isPrivate === true && data.uid !== uid) ? "Private Student" : (data.displayName || "Student"),
-                totalGold: data.totalGold || 0,
-                isCurrentUser: data.uid === uid,
-                photoURL: (data.settings?.isPrivate === true && data.uid !== uid) ? undefined : data.photoURL,
-                frame: (data.settings?.isPrivate === true && data.uid !== uid) ? undefined : data.frame
+            // All students are public now
+            leaderboard = allUsers.slice(0, 50).map((u, index) => ({
+                rank: index + 1,
+                uid: u.uid,
+                displayName: u.displayName || "Student",
+                totalGold: u.totalGold || 0,
+                isCurrentUser: u.uid === uid,
+                photoURL: u.photoURL,
+                frame: u.frame
             }));
 
             const userDoc = await adminDb.collection("users").doc(uid).get();
@@ -81,27 +79,25 @@ export async function GET(request: NextRequest) {
             const userIds = top50.map((u) => u.uid);
 
             const usersSnap = await adminDb.collection("users").where("uid", "in", userIds.length > 0 ? userIds : ["dummy"]).get();
-            const userMap: Record<string, { name: string; isPrivate: boolean; photoURL?: string; frame?: string }> = {};
+            const userMap: Record<string, { name: string; photoURL?: string; frame?: string }> = {};
             usersSnap.docs.forEach((d) => {
                 const uData = d.data();
                 userMap[uData.uid] = {
                     name: uData.displayName || "Student",
-                    isPrivate: uData.settings?.isPrivate === true,
                     photoURL: uData.photoURL,
                     frame: uData.frame
                 };
             });
 
             leaderboard = top50
-                .filter(u => !userMap[u.uid]?.isPrivate || u.uid === uid)
                 .map((data) => ({
                     rank: sortedAggregates.findIndex(u => u.uid === data.uid) + 1,
                     uid: data.uid,
-                    displayName: (userMap[data.uid]?.isPrivate && data.uid !== uid) ? "Private Student" : (userMap[data.uid]?.name || "Student"),
+                    displayName: userMap[data.uid]?.name || "Student",
                     totalGold: data.gold,
                     isCurrentUser: data.uid === uid,
-                    photoURL: (userMap[data.uid]?.isPrivate && data.uid !== uid) ? undefined : userMap[data.uid]?.photoURL,
-                    frame: (userMap[data.uid]?.isPrivate && data.uid !== uid) ? undefined : userMap[data.uid]?.frame
+                    photoURL: userMap[data.uid]?.photoURL,
+                    frame: userMap[data.uid]?.frame
                 }));
 
             userGold = userAggregates[uid]?.gold || 0;

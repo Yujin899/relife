@@ -67,14 +67,29 @@ export async function POST(request: NextRequest) {
             if (frame === null) {
                 updateData.frame = null;
             } else {
-                // Check if frame exists in inventory (stores item ids like 'frame_1')
-                if (inventory.includes(frame)) {
-                    // Map frame_1 to /frames/frame-1.png
+                const isLeagueFrame = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"].includes(frame);
+
+                if (isLeagueFrame) {
+                    // Check if user has reached this league
+                    const LEAGUE_THRESHOLDS: Record<string, number> = {
+                        "Diamond": 50000,
+                        "Platinum": 15000,
+                        "Gold": 5000,
+                        "Silver": 1000,
+                        "Bronze": 0
+                    };
+                    const gold = userData.totalGold || 0;
+                    if (gold >= LEAGUE_THRESHOLDS[frame]) {
+                        updateData.frame = frame;
+                    } else {
+                        return NextResponse.json({ error: "League rank too low" }, { status: 403 });
+                    }
+                } else if (inventory.includes(frame)) {
+                    // Logic for purchased frames (e.g. frame_1)
                     if (frame.startsWith("frame_")) {
                         const filename = frame.replace("_", "-") + ".png";
                         updateData.frame = `/frames/${filename}`;
                     } else {
-                        // For league frames which store the name directly
                         updateData.frame = frame;
                     }
                 } else {
@@ -87,8 +102,8 @@ export async function POST(request: NextRequest) {
         if (prefersMotion !== undefined || enableSound !== undefined) {
             const currentSettings = userData.settings || { prefersMotion: true, enableSound: true };
             updateData.settings = {
-                prefersMotion: prefersMotion !== undefined ? prefersMotion : currentSettings.prefersMotion,
-                enableSound: enableSound !== undefined ? enableSound : currentSettings.enableSound,
+                prefersMotion: prefersMotion !== undefined ? prefersMotion : (currentSettings.prefersMotion ?? true),
+                enableSound: enableSound !== undefined ? enableSound : (currentSettings.enableSound ?? true),
             };
         }
 

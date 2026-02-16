@@ -1,31 +1,18 @@
 import { useEffect, useState } from "react";
 import { ref, onValue, off } from "firebase/database";
 import { rtdb } from "@/lib/firebase";
-import { Shield, Zap, Trophy } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 
 interface PresenceUser {
     uid: string;
     displayName: string;
     league: string;
     state: "online" | "offline";
+    photoURL?: string;
     currentChannel?: string;
 }
 
-const LEAGUE_ICONS: Record<string, any> = {
-    "Diamond": Trophy,
-    "Platinum": Shield,
-    "Gold": Zap,
-    "Silver": Zap,
-    "Bronze": Zap,
-};
 
-const LEAGUE_COLORS: Record<string, string> = {
-    "Diamond": "#7dd3fc",   // Sky 300
-    "Platinum": "#a8a8aa",  // Gray 400
-    "Gold": "#d4a017",      // Traditional Gold
-    "Silver": "#9ca3af",    // Gray 400
-    "Bronze": "#CD7F32",    // Bronze
-};
 
 export default function PresenceSidebar() {
     const [members, setMembers] = useState<PresenceUser[]>([]);
@@ -41,6 +28,7 @@ export default function PresenceSidebar() {
                         uid: u.uid,
                         displayName: u.displayName,
                         league: u.league,
+                        photoURL: u.photoURL,
                         state: u.state,
                         currentChannel: u.currentChannel
                     })) as PresenceUser[];
@@ -76,10 +64,13 @@ export default function PresenceSidebar() {
                                 {leagueMembers.map((member) => (
                                     <div key={member.uid} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-white/5 transition opacity-50 hover:opacity-100 cursor-pointer group">
                                         <div className="relative">
-                                            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center font-bold text-xs" style={{ color: LEAGUE_COLORS[league] }}>
-                                                {member.displayName[0]}
-                                            </div>
-                                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-black rounded-full flex items-center justify-center">
+                                            <UserAvatar
+                                                src={member.photoURL}
+                                                fallback={member.displayName}
+                                                league={member.league}
+                                                size="sm"
+                                            />
+                                            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-black rounded-full flex items-center justify-center z-20">
                                                 <div className="w-2 h-2 bg-green-500 rounded-full" />
                                             </div>
                                         </div>

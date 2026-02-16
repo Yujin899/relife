@@ -13,6 +13,12 @@ interface Message {
     content: string;
     type: string;
     createdAt: number;
+    isEdited?: boolean;
+    updatedAt?: number;
+    replyTo?: string | null;
+    replyToUser?: string | null;
+    replyToContent?: string | null;
+    replyToUid?: string | null;
 }
 
 const COOLDOWNS: Record<string, number> = {
@@ -62,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { channelId, content, messageId } = body;
+        const { channelId, content, messageId, replyTo, replyToUser, replyToContent, replyToUid } = body;
 
         if (!content || content.length > 200) {
             return NextResponse.json({ error: "Invalid content length" }, { status: 400 });
@@ -104,9 +110,9 @@ export async function POST(request: NextRequest) {
 
         // Create Message in RTDB using Deterministic ID
         const targetChannel = channelId || "general";
-
-        // Use .child(messageId).set() instead of .push()
         const messageRef = adminRtdb.ref(`chat_messages/${targetChannel}`).child(messageId);
+
+        console.log(`[Chat API] Incoming Request Body:`, JSON.stringify(body, null, 2));
 
         const message = {
             id: messageId,
@@ -117,7 +123,11 @@ export async function POST(request: NextRequest) {
             frame: userData.frame || null,
             content: content.trim(),
             type: "text",
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            replyTo: replyTo || null,
+            replyToUser: replyToUser || null,
+            replyToContent: replyToContent || null,
+            replyToUid: replyToUid || null
         };
 
         await messageRef.set(message);
@@ -131,5 +141,70 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error("Error posting chat:", error);
         return NextResponse.json({ error: "Failed to post chat" }, { status: 500 });
+    }
+}
+
+export async function PATCH(request: NextRequest) {
+    const authResult = await verifyAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { uid } = authResult;
+
+    const { searchParams } = new URL(request.url);
+    const channelId = searchParams.get("channelId") || "general";
+    const messageId = searchParams.get("messageId");
+
+    if (!messageId) return NextResponse.json({ error: "Missing messageId" }, { status: 400 });
+
+    try {
+        const body = await request.json();
+        const { content } = body;
+
+        if (!content || content.length > 200) {
+            return NextResponse.json({ error: "Invalid content length" }, { status: 400 });
+        }
+
+        const messageRef = adminRtdb.ref(`chat_messages/${channelId}/${messageId}`);
+        const snapshot = await messageRef.get();
+
+        if (!snapshot.exists()) return NextResponse.json({ error: "Message not found" }, { status: 404 });
+        if (snapshot.val().uid !== uid) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+
+        await messageRef.update({
+            content: content.trim(),
+            isEdited: true,
+            updatedAt: Date.now()
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error editing chat:", error);
+        return NextResponse.json({ error: "Failed to edit chat" }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: NextRequest) {
+    const authResult = await verifyAuth(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { uid } = authResult;
+
+    const { searchParams } = new URL(request.url);
+    const channelId = searchParams.get("channelId") || "general";
+    const messageId = searchParams.get("messageId");
+
+    if (!messageId) return NextResponse.json({ error: "Missing messageId" }, { status: 400 });
+
+    try {
+        const messageRef = adminRtdb.ref(`chat_messages/${channelId}/${messageId}`);
+        const snapshot = await messageRef.get();
+
+        if (!snapshot.exists()) return NextResponse.json({ success: true });
+        if (snapshot.val().uid !== uid) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+
+        await messageRef.remove();
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error deleting chat:", error);
+        return NextResponse.json({ error: "Failed to delete chat" }, { status: 500 });
     }
 }

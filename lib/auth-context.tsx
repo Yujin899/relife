@@ -40,6 +40,7 @@ async function ensureUserDoc(user: User) {
             uid: user.uid,
             displayName: user.displayName || "Student",
             email: user.email || "",
+            photoURL: user.photoURL || "",
             createdAt: serverTimestamp(),
             totalGold: 0,
             currentStreak: 0,
@@ -57,13 +58,18 @@ async function ensureUserDoc(user: User) {
             settings: {
                 prefersMotion: true,
                 enableSound: true,
-                isPrivate: false,
             },
             lastChatAt: null,
         });
     } else {
         // Daily Login Check: Streak Maintenance
         const data = snap.data();
+
+        // Sync Google Profile Image if missing
+        if (!data.photoURL && user.photoURL) {
+            console.log("📸 Syncing Profile Image...");
+            await updateDoc(userRef, { photoURL: user.photoURL });
+        }
         const lastDateVal = data.lastQuizDate; // Timestamp or null
 
         if (lastDateVal && typeof lastDateVal.toDate === "function") {

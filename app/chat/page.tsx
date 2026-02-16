@@ -13,13 +13,18 @@ import {
     Loader2,
     AlertCircle,
     LayoutDashboard,
-    Menu
+    Menu,
+    Reply,
+    Edit2,
+    Trash2,
+    CornerDownRight,
+    X
 } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import { useAuth } from "@/lib/auth-context";
 import { getLeague } from "@/lib/leagues";
 import { doc, getDoc } from "firebase/firestore";
-import { ref, onValue, off, query, limitToLast, set, onDisconnect, serverTimestamp } from "firebase/database";
+import { ref, onValue, off, query, limitToLast, set, onDisconnect, serverTimestamp, orderByChild } from "firebase/database";
 import { db, rtdb } from "@/lib/firebase";
 import Link from "next/link";
 import AuthGuard from "@/components/AuthGuard";
@@ -29,9 +34,8 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import BottomNav from "@/components/BottomNav";
 
-const getDir = (text: string) => {
+const getDir = (text: string): "rtl" | "ltr" => {
     const arabic = /[\u0600-\u06FF]/;
     return arabic.test(text) ? "rtl" : "ltr";
 };
@@ -45,6 +49,14 @@ const LEAGUE_ICONS: Record<string, any> = {
     "Bronze": Zap,
 };
 
+const LEAGUE_COLORS: Record<string, string> = {
+    "Diamond": "#7dd3fc",
+    "Platinum": "#a8a8aa",
+    "Gold": "#d4a017",
+    "Silver": "#9ca3af",
+    "Bronze": "#CD7F32",
+};
+
 interface Message {
     id: string;
     uid: string;
@@ -55,6 +67,13 @@ interface Message {
     type?: "text" | "system";
     status?: "sending" | "sent" | "error";
     photoURL?: string | null;
+    frame?: string | null;
+    replyTo?: string | null;
+    replyToUser?: string | null;
+    replyToContent?: string | null;
+    replyToUid?: string | null;
+    isEdited?: boolean;
+    isDeleted?: boolean;
 }
 
 const CHANNELS = [
@@ -88,6 +107,8 @@ function ChatContent() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [lastSent, setLastSent] = useState(0);
+    const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+    const [editingMessage, setEditingMessage] = useState<Message | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -116,6 +137,7 @@ function ChatContent() {
                     uid: user.uid,
                     displayName: profile.displayName || "Student",
                     league: userLeague.name,
+                    photoURL: profile.photoURL || user.photoURL || "",
                     state: "online",
                     lastChanged: serverTimestamp(),
                     currentChannel: channelId
@@ -151,15 +173,28 @@ function ChatContent() {
     useEffect(() => {
         if (!user) return;
 
-        const chatRef = query(ref(rtdb, `chat_messages/${channelId}`), limitToLast(50));
+        const chatRef = query(
+            ref(rtdb, `chat_messages/${channelId}`),
+            orderByChild("createdAt"),
+            limitToLast(50)
+        );
 
         const unsubscribe = onValue(chatRef, (snapshot) => {
             if (snapshot.exists()) {
-                const data = snapshot.val() as Record<string, Omit<Message, 'id'>>;
-                const msgs = Object.entries(data).map(([id, val]) => ({
-                    id,
-                    ...val
-                })) as Message[];
+                const msgs: Message[] = [];
+                snapshot.forEach((child) => {
+                    msgs.push({
+                        id: child.key!,
+                        ...child.val()
+                    } as Message);
+                });
+
+                // Ascending sort (Oldest at index 0, Newest at end)
+                msgs.sort((a, b) => {
+                    const tA = typeof a.createdAt === 'string' ? new Date(a.createdAt).getTime() : Number(a.createdAt || 0);
+                    const tB = typeof b.createdAt === 'string' ? new Date(b.createdAt).getTime() : Number(b.createdAt || 0);
+                    return tA - tB;
+                });
 
                 setMessages(prev => {
                     const remoteIds = new Set(msgs.map(m => m.id));
@@ -221,25 +256,69 @@ function ChatContent() {
 
     useEffect(() => {
         if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'instant' });
         }
     }, [messages]);
 
-    const handleSendMessage = async (e: React.FormEvent | undefined, retryContent?: string) => {
+    const handleSendMessage = async (e: React.FormEvent | undefined, retryContent?: string, retryMeta?: Partial<Message>) => {
         if (e) e.preventDefault();
-        const content = retryContent || input.trim();
+
+        // Capture everything immediately
+        const currentInput = input;
+        const currentReplyingTo = replyingTo;
+        const currentEditingMessage = editingMessage;
+        const content = retryContent || currentInput.trim();
+        const now = Date.now();
+
+        console.log("[Chat] handleSendMessage START", {
+            hasId: !!currentReplyingTo?.id,
+            replyToId: currentReplyingTo?.id,
+            content: content.substring(0, 10),
+            isRetry: !!retryContent
+        });
+
         if (!content || !user || !profile || !canPost()) return;
 
-        const now = Date.now();
-        if (!retryContent && now - lastSent < RATE_LIMIT_MS) return;
+        // Rate limit check only for new messages (not retries or edits)
+        if (!currentEditingMessage && !retryContent) {
+            if (now - lastSent < RATE_LIMIT_MS) return;
+            setLastSent(now);
+        }
+
+        if (currentEditingMessage) {
+            const originalId = currentEditingMessage.id;
+            try {
+                const token = await user.getIdToken();
+                const res = await fetch(`/api/chat?channelId=${channelId}&messageId=${originalId}`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ content })
+                });
+                if (!res.ok) throw new Error("Edit failed");
+                setEditingMessage(null);
+                setInput("");
+            } catch (error) {
+                console.error("Edit failed", error);
+            }
+            return;
+        }
 
         if (!retryContent) {
             setInput("");
-            setLastSent(now);
             inputRef.current?.focus();
         }
 
-        const tempId = `${user.uid}-${Date.now()}`;
+        const tempId = `${user.uid}-${now}`;
+        const rTo = retryMeta?.replyTo || currentReplyingTo?.id || null;
+        const rToUser = retryMeta?.replyToUser || currentReplyingTo?.displayName || null;
+        const rToContent = (retryMeta?.replyToContent || currentReplyingTo?.content || "")?.toString().substring(0, 50) || null;
+        const rToUid = retryMeta?.replyToUid || currentReplyingTo?.uid || null;
+
+        console.log("[Chat] Payload Prepared:", { tempId, rTo, rToUser, rToUid });
+
         const optimisticMsg: Message = {
             id: tempId,
             uid: user.uid,
@@ -247,26 +326,38 @@ function ChatContent() {
             league: userLeague.name,
             photoURL: user.photoURL,
             content: content,
-            createdAt: new Date().toISOString(),
+            createdAt: now,
             type: "text",
-            status: "sending"
+            status: "sending",
+            replyTo: rTo,
+            replyToUser: rToUser,
+            replyToContent: rToContent,
+            replyToUid: rToUid,
         };
 
         setMessages(prev => [...prev, optimisticMsg]);
 
         try {
             const token = await user.getIdToken();
+            const payload = {
+                channelId,
+                content: content,
+                messageId: tempId,
+                replyTo: rTo,
+                replyToUser: rToUser,
+                replyToContent: rToContent,
+                replyToUid: rToUid,
+            };
+
+            console.log("[Chat] Fetching API:", payload);
+
             const res = await fetch("/api/chat", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    channelId,
-                    content: content,
-                    messageId: tempId
-                })
+                body: JSON.stringify(payload)
             });
             if (!res.ok) throw new Error("Failed");
             setMessages(prev => prev.map(m => m.id === tempId ? { ...m, status: "sent" } : m));
@@ -274,6 +365,35 @@ function ChatContent() {
             console.error("Send failed", error);
             setMessages(prev => prev.map(m => m.id === tempId ? { ...m, status: "error" } : m));
         }
+
+        if (currentReplyingTo) setReplyingTo(null);
+    };
+
+    const handleDeleteMessage = async (messageId: string) => {
+        if (!user) return;
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch(`/api/chat?channelId=${channelId}&messageId=${messageId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error("Delete failed");
+            // Removal will happen via RTDB listener
+        } catch (error) {
+            console.error("Delete failed", error);
+        }
+    };
+
+    const handleEditMessage = (msg: Message) => {
+        setEditingMessage(msg);
+        setInput(msg.content);
+        inputRef.current?.focus();
+    };
+
+    const cancelEditOrReply = () => {
+        setEditingMessage(null);
+        setReplyingTo(null);
+        setInput("");
     };
 
     return (
@@ -361,9 +481,10 @@ function ChatContent() {
                 {/* Messages Feed */}
                 <div
                     ref={scrollRef}
-                    className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar"
+                    className="flex-1 overflow-y-auto pt-4 sm:pt-6 space-y-0 custom-scrollbar flex flex-col"
                 >
-                    <div className="mb-10 pt-10">
+                    {/* Welcome Header at the top (Oldest part of history) */}
+                    <div className="mb-10 pt-10 px-4 sm:px-8">
                         <div className="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center mb-4">
                             <currentChannel.icon className="w-8 h-8 text-blue-500" />
                         </div>
@@ -388,103 +509,172 @@ function ChatContent() {
                                     key={msg.id}
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    className={`flex gap-4 group ${!showAvatar ? "-mt-4" : ""} sm:pl-4 hover:bg-white/[0.02] py-0.5 sm:-mx-4 pr-4 transition-colors`}
+                                    drag="x"
+                                    dragConstraints={{ left: -100, right: 0 }}
+                                    dragSnapToOrigin={true}
+                                    dragElastic={0.1}
+                                    onDragEnd={(_, info) => {
+                                        if (info.offset.x < -40) {
+                                            setReplyingTo(msg);
+                                            inputRef.current?.focus();
+                                        }
+                                    }}
+                                    className={`flex flex-col group ${!showAvatar ? "" : "mt-4"} py-1 px-4 sm:px-8 transition-colors relative touch-pan-y ${msg.replyToUid === user?.uid ? 'bg-[#f0b232]/[0.08]' : 'hover:bg-white/[0.02]'}`}
                                 >
-                                    {showAvatar ? (
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <button className="shrink-0 mt-0.5 outline-none">
-                                                    <UserAvatar
-                                                        src={displayPhoto}
-                                                        fallback={displayName}
-                                                        league={displayLeague}
-                                                        frame={displayFrame}
-                                                        size="md"
-                                                        className="shadow-lg hover:opacity-80 transition-opacity"
-                                                    />
-                                                </button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-80 bg-[#121212] border-white/10 p-0 overflow-hidden text-white" side="right" align="start">
-                                                <div className="h-20 bg-blue-600/20 relative" />
-                                                <div className="px-6 pb-6 -mt-10 relative">
-                                                    <div className="relative z-10 w-20 h-20 rounded-full border-4 border-[#121212] bg-[#181818] shadow-lg flex items-center justify-center">
+                                    {/* Reply Line (Discord style) */}
+                                    {msg.replyTo && (
+                                        <div
+                                            className="absolute left-[34px] sm:left-[50px] top-[14px] w-4 h-5 border-l-2 border-t-2 border-white/10 rounded-tl-lg z-0"
+                                            style={{ top: '14px', height: '18px' }}
+                                        />
+                                    )}
+
+                                    {/* Reply Preview */}
+                                    {msg.replyTo && (
+                                        <div className="flex items-center gap-2 ml-[54px] sm:ml-[70px] mb-1 opacity-60 relative z-10">
+                                            <CornerDownRight className="w-3 h-3 text-white/20" />
+                                            <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/40 truncate bg-white/5 px-2 py-0.5 rounded">
+                                                <span className="font-bold text-white/50">@{msg.replyToUser || "Member"}</span>
+                                                <span className="truncate max-w-[200px] italic">{msg.replyToContent}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-4">
+                                        {showAvatar ? (
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <button className="shrink-0 mt-0.5 outline-none">
                                                         <UserAvatar
                                                             src={displayPhoto}
                                                             fallback={displayName}
                                                             league={displayLeague}
                                                             frame={displayFrame}
-                                                            size="lg"
-                                                            className="w-full h-full text-2xl"
+                                                            size="md"
+                                                            className="shadow-lg hover:opacity-80 transition-opacity"
                                                         />
-                                                    </div>
-                                                    <div className="mt-3">
-                                                        <h3 className="text-xl font-bold mb-0.5">{displayName}</h3>
-                                                        <div className="flex items-center gap-1.5 mb-4">
-                                                            <LeagueIcon className="w-3.5 h-3.5" style={{ color: LEAGUE_COLORS[displayLeague] }} />
-                                                            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: LEAGUE_COLORS[displayLeague] }}>
-                                                                {displayLeague} League
-                                                            </span>
-                                                        </div>
-                                                        <div className="h-px bg-white/5 mb-4" />
-                                                        <div className="space-y-3 font-mono text-xs text-white/30 truncate select-all bg-white/5 p-2 rounded">
-                                                            {msg.uid}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>
-                                    ) : (
-                                        <div className="w-10 shrink-0 text-[10px] text-white/20 font-mono text-center opacity-0 group-hover:opacity-100 mt-1 select-none">
-                                            {(() => {
-                                                try {
-                                                    const d = new Date(msg.createdAt);
-                                                    return isNaN(d.getTime()) ? "--:--" : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                                } catch {
-                                                    return "--:--";
-                                                }
-                                            })()}
-                                        </div>
-                                    )}
-
-                                    <div className="flex-1 min-w-0">
-                                        {showAvatar && (
-                                            <div className="flex items-center gap-2 mb-0.5">
-                                                <span
-                                                    className="font-bold text-base text-white hover:underline cursor-pointer"
-                                                    style={{ color: LEAGUE_COLORS[displayLeague] }}
-                                                >
-                                                    {displayName}
-                                                </span>
-                                                <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-white/5 text-white/40">
-                                                    {(() => {
-                                                        try {
-                                                            const d = new Date(msg.createdAt);
-                                                            return isNaN(d.getTime()) ? "--:--" : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                                                        } catch {
-                                                            return "--:--";
-                                                        }
-                                                    })()}
-                                                </span>
-                                                {msg.status === "sending" && <Loader2 className="w-3 h-3 text-white/20 animate-spin ml-2" />}
-                                                {msg.status === "error" && (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setMessages(prev => prev.filter(m => m.id !== msg.id));
-                                                            handleSendMessage(e, msg.content);
-                                                        }}
-                                                        className="ml-2 text-red-500 hover:text-red-400 flex items-center gap-1 text-[10px] uppercase font-bold"
-                                                    >
-                                                        <AlertCircle className="w-3 h-3" /> Retry
                                                     </button>
-                                                )}
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-80 bg-[#121212] border-white/10 p-0 overflow-hidden text-white" side="right" align="start">
+                                                    <div className="h-20 bg-blue-600/20 relative" />
+                                                    <div className="px-6 pb-6 -mt-10 relative">
+                                                        <div className="relative z-10 w-20 h-20 rounded-full border-4 border-[#121212] bg-[#181818] shadow-lg flex items-center justify-center">
+                                                            <UserAvatar
+                                                                src={displayPhoto}
+                                                                fallback={displayName}
+                                                                league={displayLeague}
+                                                                frame={displayFrame}
+                                                                size="lg"
+                                                                className="w-full h-full text-2xl"
+                                                            />
+                                                        </div>
+                                                        <div className="mt-3">
+                                                            <h3 className="text-xl font-bold mb-0.5">{displayName}</h3>
+                                                            <div className="flex items-center gap-1.5 mb-4">
+                                                                <LeagueIcon className="w-3.5 h-3.5" style={{ color: LEAGUE_COLORS[displayLeague] }} />
+                                                                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: LEAGUE_COLORS[displayLeague] }}>
+                                                                    {displayLeague} League
+                                                                </span>
+                                                            </div>
+                                                            <div className="h-px bg-white/5 mb-4" />
+                                                            <div className="space-y-3 font-mono text-xs text-white/30 truncate select-all bg-white/5 p-2 rounded">
+                                                                {msg.uid}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
+                                        ) : (
+                                            <div className="w-10 shrink-0 text-[10px] text-white/20 font-mono text-center opacity-0 group-hover:opacity-100 mt-1 select-none">
+                                                {(() => {
+                                                    try {
+                                                        const d = new Date(msg.createdAt);
+                                                        return isNaN(d.getTime()) ? "--:--" : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                    } catch {
+                                                        return "--:--";
+                                                    }
+                                                })()}
                                             </div>
                                         )}
-                                        <div
-                                            className={`text-[15px] leading-relaxed text-white/90 whitespace-pre-wrap break-words ${dir === "rtl" ? "text-right font-arabic" : ""}`}
-                                            dir={dir}
-                                        >
-                                            {msg.content}
+
+                                        <div className="flex-1 min-w-0">
+                                            {showAvatar && (
+                                                <div className="flex items-center gap-2 mb-0.5">
+                                                    <span
+                                                        className="font-bold text-base text-white hover:underline cursor-pointer"
+                                                        style={{ color: LEAGUE_COLORS[displayLeague] }}
+                                                    >
+                                                        {displayName}
+                                                    </span>
+                                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-white/5 text-white/40">
+                                                        {(() => {
+                                                            try {
+                                                                const d = new Date(msg.createdAt);
+                                                                return isNaN(d.getTime()) ? "--:--" : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                                            } catch {
+                                                                return "--:--";
+                                                            }
+                                                        })()}
+                                                    </span>
+                                                    {msg.status === "sending" && <Loader2 className="w-3 h-3 text-white/20 animate-spin ml-2" />}
+                                                    {msg.status === "error" && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setMessages(prev => prev.filter(m => m.id !== msg.id));
+                                                                handleSendMessage(e, msg.content, {
+                                                                    replyTo: msg.replyTo,
+                                                                    replyToUser: msg.replyToUser,
+                                                                    replyToContent: msg.replyToContent
+                                                                });
+                                                            }}
+                                                            className="ml-2 text-red-500 hover:text-red-400 flex items-center gap-1 text-[10px] uppercase font-bold"
+                                                        >
+                                                            <AlertCircle className="w-3 h-3" /> Retry
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                            <div
+                                                className={`text-[15px] leading-relaxed text-white/90 whitespace-pre-wrap break-words ${dir === "rtl" ? "text-right font-arabic" : ""}`}
+                                                dir={dir}
+                                            >
+                                                {msg.content}
+                                                {msg.isEdited && <span className="text-[10px] text-white/20 ml-2">(edited)</span>}
+                                            </div>
+                                        </div>
+
+                                        {/* Action Menu (Discord Style) */}
+                                        <div className="absolute right-0 top-0 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all flex items-center bg-[#181818] border border-white/10 rounded-lg shadow-xl overflow-hidden z-20">
+                                            <button
+                                                onClick={() => {
+                                                    setReplyingTo(msg);
+                                                    inputRef.current?.focus();
+                                                }}
+                                                className="p-2 hover:bg-white/5 text-white/40 hover:text-blue-400 transition-colors"
+                                                title="Reply"
+                                            >
+                                                <Reply className="w-4 h-4" />
+                                            </button>
+
+                                            {msg.uid === user?.uid && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleEditMessage(msg)}
+                                                        className="p-2 hover:bg-white/5 text-white/40 hover:text-green-400 transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteMessage(msg.id)}
+                                                        className="p-2 hover:bg-white/5 text-white/40 hover:text-red-400 transition-colors"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </motion.div>
@@ -498,23 +688,49 @@ function ChatContent() {
                     {canPost() ? (
                         <form
                             onSubmit={handleSendMessage}
-                            className="relative group focus-within:ring-2 ring-blue-500/50 rounded-xl transition-all bg-[#181818]"
+                            className="relative group focus-within:ring-2 ring-blue-500/50 rounded-xl transition-all bg-[#181818] overflow-hidden"
                         >
+                            {/* Replying/Editing Bar */}
+                            {(replyingTo || editingMessage) && (
+                                <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between bg-white/5">
+                                    <div className="flex items-center gap-2 text-xs">
+                                        {replyingTo ? (
+                                            <>
+                                                <Reply className="w-3 h-3 text-blue-500" />
+                                                <span className="text-white/40">Replying to <span className="font-bold text-white/60">@{replyingTo.displayName}</span></span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Edit2 className="w-3 h-3 text-green-500" />
+                                                <span className="text-white/40">Editing Message</span>
+                                            </>
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={cancelEditOrReply}
+                                        className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                                    >
+                                        <X className="w-3 h-3 text-white/40" />
+                                    </button>
+                                </div>
+                            )}
+
                             <input
                                 ref={inputRef}
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder={`Message #${currentChannel.name}`}
+                                placeholder={replyingTo ? `Reply to ${replyingTo.displayName}...` : editingMessage ? "Edit your message..." : `Message #${currentChannel.name}`}
                                 className={`w-full bg-transparent border-none p-3.5 pr-12 text-sm text-white placeholder:text-white/30 focus:outline-none ${getDir(input) === "rtl" ? "text-right font-arabic" : ""}`}
                                 dir={getDir(input)}
                             />
                             <button
                                 type="submit"
                                 disabled={!input.trim()}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition-colors"
+                                className="absolute right-2 bottom-2 p-2 rounded-xl hover:bg-white/10 text-white/50 hover:text-white transition-colors"
                             >
-                                <Send className="w-5 h-5" />
+                                {editingMessage ? <Zap className="w-5 h-5 text-green-500" /> : <Send className="w-5 h-5" />}
                             </button>
                         </form>
                     ) : (
@@ -550,11 +766,3 @@ function ChatContent() {
         </div>
     );
 }
-
-const LEAGUE_COLORS: Record<string, string> = {
-    "Diamond": "#7dd3fc",
-    "Platinum": "#a8a8aa",
-    "Gold": "#fbbf24",
-    "Silver": "#94a3b8",
-    "Bronze": "#b45309"
-};

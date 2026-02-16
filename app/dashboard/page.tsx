@@ -55,7 +55,6 @@ interface UserProfile {
     settings?: {
         prefersMotion: boolean;
         enableSound: boolean;
-        isPrivate: boolean;
     };
     createdAt?: any;
 }
@@ -107,7 +106,7 @@ function DashboardContent() {
     const [announcement, setAnnouncement] = useState<{ content: string; authorName: string; authorLeague: string } | null>(null);
     const [showBroadcastModal, setShowBroadcastModal] = useState(false);
 
-    const updateSettings = async (newSettings: { prefersMotion?: boolean; enableSound?: boolean; isPrivate?: boolean }) => {
+    const updateSettings = async (newSettings: { prefersMotion?: boolean; enableSound?: boolean }) => {
         if (!user || !profile) return;
         setUpdatingSettings(true);
         try {
@@ -158,7 +157,7 @@ function DashboardContent() {
                     profileUpdates: data.profileUpdates ?? 0,
                     frame: data.frame ?? null,
                     role: data.role ?? "student",
-                    settings: data.settings ?? { prefersMotion: true, enableSound: true, isPrivate: false },
+                    settings: data.settings ?? { prefersMotion: true, enableSound: true },
                     createdAt: data.createdAt,
                 });
             } else {
@@ -175,7 +174,7 @@ function DashboardContent() {
                     activeTheme: "default",
                     profileUpdates: 0,
                     frame: undefined,
-                    settings: { prefersMotion: true, enableSound: true, isPrivate: false },
+                    settings: { prefersMotion: true, enableSound: true },
                 });
             }
 
@@ -370,20 +369,6 @@ function DashboardContent() {
                                 </button>
                             </div>
 
-                            {/* Privacy Toggle */}
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-foreground/2 border border-foreground/5">
-                                <div>
-                                    <p className="text-sm font-bold">Private Profile</p>
-                                    <p className="text-[10px] text-foreground/50 font-medium">Hide your name from public boards</p>
-                                </div>
-                                <button
-                                    disabled={updatingSettings}
-                                    onClick={() => updateSettings({ isPrivate: !profile?.settings?.isPrivate })}
-                                    className={`w-10 h-5 rounded-full transition-colors relative ${profile?.settings?.isPrivate ? "bg-blue-500" : "bg-foreground/20"}`}
-                                >
-                                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${profile?.settings?.isPrivate ? "left-6" : "left-1"}`} />
-                                </button>
-                            </div>
                         </div>
 
                         <button
